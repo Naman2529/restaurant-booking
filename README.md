@@ -37,8 +37,10 @@ The staff panel shows each restaurant's tables as a grid of numbered squares, li
 
 | Colour | Meaning | Expected staff action |
 |---|---|---|
+| Green | Free | — |
+| Transparent (bordered) | Free now, but a booking arrives within 30 minutes | Don't give it away |
 | Gray | Booking time has started, guests haven't arrived | Mark no-show by +15 min |
-| Green | Party seated, within their sitting | — |
+| Red | Party seated, within their sitting | — |
 | Orange | Sitting time is over | Free the table or extend the sitting |
 
 Colours are worked out from the reservation status and the current time. They are never stored.
