@@ -103,7 +103,7 @@ Only **booked** and **seated** reservations hold a table. A table is free whenev
 | Entity | Purpose |
 |---|---|
 | `restaurant` | A tenant |
-| `dining_table` | A numbered table or hall in a restaurant, with capacity and minimum party size |
+| `dining_table` | A numbered table or hall in a restaurant, with its capacity |
 | `app_user` | A customer account, with email verification |
 | `restaurant_staff` | A staff login tied to one restaurant, with a role (receptionist or waiter) |
 | `reservation` | A booking of one table for one time period by one customer, with a status |
