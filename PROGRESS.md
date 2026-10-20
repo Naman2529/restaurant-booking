@@ -4,7 +4,7 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 
 **Last updated:** Tue 20 Oct 2026.
 **Deadline:** Sat 24 Oct, 11:59 PM. Aim to submit 23 Oct.
-**Status:** Days 1–2 done (all 6 functions + `check_staff` helper). Day 3 booking procedure done; race test deferred. Day 4 done (all 7 procedures run and tested). Calendar says Day 8, so about 4 days behind. Original schedule kept; user is catching up.
+**Status:** Days 1–2 done (all 6 functions + `check_staff` helper). Day 3 booking procedure done; race test deferred. Day 4 done (all 7 procedures run and tested). Day 5 done (3 triggers run and tested). Calendar says Day 9 (Wed 21 Oct), so about 3 days behind. Original schedule kept; user is catching up.
 
 ---
 
@@ -56,8 +56,11 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 | `db/procedures/mark_no_show.sql` | `mark_no_show(reservation, staff)`: both roles; booked → no_show, only after start time (gray tables) | Run and tested (gray → green) |
 | `db/procedures/extend_reservation.sql` | `extend_reservation(reservation, staff, extra interval)`: both roles; seated only; pushes `upper(period)`; friendly errors on `23P01` (next booking) and `end_by_2300` | Run and tested (happy, clash, 23:00 boundary, past 23:00, not seated, wrong restaurant, non-positive) |
 | `db/procedures/reassign_table.sql` | `reassign_table(reservation, staff, new_table)`: receptionist only; `booked` only (seated parties never move); same restaurant, different table, capacity in `allowed_capacities`; friendly error on `23P01`. Error messages show table **numbers**, never ids | Run and tested (8 cases) |
+| `db/triggers/party_fits_table.sql` | BEFORE INSERT OR UPDATE OF `party_size, table_id`: table capacity must be in `allowed_capacities(party)`. Backstop for raw writes (defence in depth with the procedures) | Run and tested (8 cases, existing rows checked) |
+| `db/triggers/status_transition.sql` | BEFORE UPDATE OF `status`: only `booked→seated/cancelled/no_show` and `seated→completed`; same-status is a no-op. INSERT not checked on purpose (super admin / seed can insert any status; app only goes through `book_table`) | Run and tested (9 cases) |
+| `db/triggers/status_timestamps.sql` | BEFORE UPDATE OF `status`: sets `seated_at` / `cancelled_at` to `now()`, overwriting any value passed (no backdating). Procedures still set them too; kept on purpose | Run and tested |
 
-**Load order (files have no number prefixes, so run them in exactly this order): `schema.sql` → `seed.sql` → `ist_now` → `check_staff` → `allowed_capacities` → `available_tables` → `available_slots` → `seat_map` → `can_cancel` → `book_table` → `cancel_reservation` → `seat_reservation` → `complete_reservation` → `mark_no_show` → `extend_reservation` → `reassign_table`.**
+**Load order (files have no number prefixes, so run them in exactly this order): `schema.sql` → `seed.sql` → `ist_now` → `check_staff` → `allowed_capacities` → `available_tables` → `available_slots` → `seat_map` → `can_cancel` → `book_table` → `cancel_reservation` → `seat_reservation` → `complete_reservation` → `mark_no_show` → `extend_reservation` → `reassign_table` → `party_fits_table` → `status_transition` → `status_timestamps`.**
 
 ### Key schema facts
 - `reservation.period` is a `tsrange` in IST wall-clock time, stored as `[start, end)`. Default sitting is 2 hours, and staff can extend it.
@@ -71,8 +74,11 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 
 ## Next Up (pick up here)
 
-1. Commit + push Day 4.
-2. **Day 5: triggers.** Candidates: party fits table capacity (incl. halls 11+), block illegal status transitions, auto-set `seated_at` / `cancelled_at`.
+1. Commit + push Day 5.
+2. **Day 6:** a cursor with a real row-by-row job, group objects into schemas ("packages"), one test script that resets the DB and exercises every object. **DB layer done.**
+
+- **Day 7 note:** the Go app's limited DB role gets no direct INSERT/UPDATE on `reservation`, only EXECUTE on procedures. That needs the procedures to be `SECURITY DEFINER`.
+- psql: a `=*#` prompt means a transaction is still open. Make sure it's `=#` before `\i`-ing a file, or a later `ROLLBACK` undoes the CREATE too.
 
 ### Reminders for later steps
 - **`table_id` ≠ `table_number`.** Ids are global across restaurants and the seed's `INSERT … SELECT … JOIN` doesn't fix their order. In tests, look tables up by `(restaurant_id, table_number)` with `\gset`, never hard-code ids. Staff/UI only ever see table numbers.
