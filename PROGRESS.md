@@ -4,7 +4,7 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 
 **Last updated:** Tue 20 Oct 2026.
 **Deadline:** Sat 24 Oct, 11:59 PM. Aim to submit 23 Oct.
-**Status:** Days 1–2 done (all 6 functions). Day 3 booking procedure done; race test deferred. Calendar says Day 8, so about 5 days behind. Original schedule kept; user is catching up.
+**Status:** Days 1–2 done (all 6 functions + `check_staff` helper). Day 3 booking procedure done; race test deferred. Day 4: 4 of 6 procedures tested, `extend_reservation` written, `reassign_table` left. Calendar says Day 8, so about 5 days behind. Original schedule kept; user is catching up.
 
 ---
 
@@ -49,8 +49,14 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 | `db/functions/seat_map.sql` | `seat_map(restaurant)`: every table with derived colour (green / transparent / gray / red / orange) plus the reservation id and period it is showing | Run (all green on seed) |
 | `db/functions/can_cancel.sql` | `can_cancel(reservation, user)`: owner + status `booked` + at least 15 min before start | Run and tested |
 | `db/procedures/book_table.sql` | `book_table(user, restaurant, start, party, INOUT reservation_id)`: rejects past starts, missing/unverified users; tries `available_tables` smallest first; catches `23P01` and moves to the next table | Run and tested (happy path, unverified, past) |
+| `db/functions/check_staff.sql` | `check_staff(staff, restaurant, roles[])`: raises if staff missing, at another restaurant, or wrong role. Used via `PERFORM` by every staff procedure | Run and tested |
+| `db/procedures/cancel_reservation.sql` | `cancel_reservation(reservation, user)`: row lock, specific errors (missing / not owner / not booked / under 15 min via `can_cancel`), sets `cancelled` + `cancelled_at` | Run and tested |
+| `db/procedures/seat_reservation.sql` | `seat_reservation(reservation, staff)`: receptionist only; booked → seated + `seated_at`; allowed from 30 min before start until period end | Run and tested |
+| `db/procedures/complete_reservation.sql` | `complete_reservation(reservation, staff)`: both roles; seated → completed (frees the table) | Run and tested (seat map back to green) |
+| `db/procedures/mark_no_show.sql` | `mark_no_show(reservation, staff)`: both roles; booked → no_show, only after start time (gray tables) | Run and tested (gray → green) |
+| `db/procedures/extend_reservation.sql` | `extend_reservation(reservation, staff, extra interval)`: both roles; seated only; pushes `upper(period)`; friendly errors on `23P01` (next booking) and `end_by_2300` | **Written, not yet run** |
 
-**Load order (files have no number prefixes, so run them in exactly this order): `schema.sql` → `seed.sql` → `ist_now` → `allowed_capacities` → `available_tables` → `available_slots` → `seat_map` → `can_cancel` → `book_table`.**
+**Load order (files have no number prefixes, so run them in exactly this order): `schema.sql` → `seed.sql` → `ist_now` → `check_staff` → `allowed_capacities` → `available_tables` → `available_slots` → `seat_map` → `can_cancel` → `book_table` → `cancel_reservation` → `seat_reservation` → `complete_reservation` → `mark_no_show` → `extend_reservation`.**
 
 ### Key schema facts
 - `reservation.period` is a `tsrange` in IST wall-clock time, stored as `[start, end)`. Default sitting is 2 hours, and staff can extend it.
@@ -64,19 +70,15 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 
 ## Next Up (pick up here)
 
-Day 4 procedures, one file each in `db/procedures/`, written one at a time:
-1. **`cancel_reservation(reservation, user)`**: uses `can_cancel`, sets `cancelled` + `cancelled_at`.
-2. **`seat_reservation`**: booked → seated, sets `seated_at`. Receptionist only.
-3. **`complete_reservation`** (free the table): seated → completed. Both roles.
-4. **`mark_no_show`**: booked → no_show. Both roles.
-5. **`extend_reservation`**: push `upper(period)`; the exclusion constraint still guards it. Both roles.
-6. **`reassign_table`**: move to another table. Receptionist only.
-
-Then add each new file to the load order above, and commit + push.
+1. **Run and test `extend_reservation`** (happy path, clash with next booking, past 23:00, not seated).
+2. **`reassign_table(reservation, staff, new table)`**: receptionist only; move to another table at the same restaurant; exclusion constraint guards clashes. Add to load order.
+3. Commit + push. Then Day 5: triggers.
 
 ### Reminders for later steps
 - **Deferred: `book_table` race test** (📸 live, two terminals). Steps are in LATER.md.
-- `CALL` arguments can't contain subqueries. Pass plain ids (that's how Go will call it anyway).
+- `CALL` arguments can't contain subqueries. Pass plain ids (that's how Go will call it anyway). `lastval()` is fine (e.g. `CALL seat_reservation(lastval(), 2)` right after `book_table`).
+- Seed staff ids: 1 = Spice Route waiter, 2 = Spice Route receptionist, 3 = Coastal waiter, 4 = Coastal receptionist. Users: 1 Aarav, 2 Priya, 3 Rohan, 4 Meera (unverified). Restaurants: 1 Spice Route, 2 Coastal Kitchen.
+- Time-sensitive tests: insert directly inside `BEGIN … ROLLBACK` to get a booking whose start has passed (`book_table` rejects past starts).
 - `available_tables` is advisory. The exclusion constraint is the real guarantee (report point).
 - Postgres burns identity numbers on failed / rolled-back inserts, so reservation ids have gaps. Normal.
 - **Day 6 "packages"** = Postgres schemas used as namespaces (faculty accepted this).
