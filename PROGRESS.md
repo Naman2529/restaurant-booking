@@ -4,7 +4,7 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 
 **Last updated:** Tue 20 Oct 2026.
 **Deadline:** Sat 24 Oct, 11:59 PM. Aim to submit 23 Oct.
-**Status:** Days 1–2 done (all 6 functions + `check_staff` helper). Day 3 booking procedure done; race test deferred. Day 4: 4 of 6 procedures tested, `extend_reservation` written, `reassign_table` left. Calendar says Day 8, so about 5 days behind. Original schedule kept; user is catching up.
+**Status:** Days 1–2 done (all 6 functions + `check_staff` helper). Day 3 booking procedure done; race test deferred. Day 4 done (all 7 procedures run and tested). Calendar says Day 8, so about 4 days behind. Original schedule kept; user is catching up.
 
 ---
 
@@ -54,9 +54,10 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 | `db/procedures/seat_reservation.sql` | `seat_reservation(reservation, staff)`: receptionist only; booked → seated + `seated_at`; allowed from 30 min before start until period end | Run and tested |
 | `db/procedures/complete_reservation.sql` | `complete_reservation(reservation, staff)`: both roles; seated → completed (frees the table) | Run and tested (seat map back to green) |
 | `db/procedures/mark_no_show.sql` | `mark_no_show(reservation, staff)`: both roles; booked → no_show, only after start time (gray tables) | Run and tested (gray → green) |
-| `db/procedures/extend_reservation.sql` | `extend_reservation(reservation, staff, extra interval)`: both roles; seated only; pushes `upper(period)`; friendly errors on `23P01` (next booking) and `end_by_2300` | **Written, not yet run** |
+| `db/procedures/extend_reservation.sql` | `extend_reservation(reservation, staff, extra interval)`: both roles; seated only; pushes `upper(period)`; friendly errors on `23P01` (next booking) and `end_by_2300` | Run and tested (happy, clash, 23:00 boundary, past 23:00, not seated, wrong restaurant, non-positive) |
+| `db/procedures/reassign_table.sql` | `reassign_table(reservation, staff, new_table)`: receptionist only; `booked` only (seated parties never move); same restaurant, different table, capacity in `allowed_capacities`; friendly error on `23P01`. Error messages show table **numbers**, never ids | Run and tested (8 cases) |
 
-**Load order (files have no number prefixes, so run them in exactly this order): `schema.sql` → `seed.sql` → `ist_now` → `check_staff` → `allowed_capacities` → `available_tables` → `available_slots` → `seat_map` → `can_cancel` → `book_table` → `cancel_reservation` → `seat_reservation` → `complete_reservation` → `mark_no_show` → `extend_reservation`.**
+**Load order (files have no number prefixes, so run them in exactly this order): `schema.sql` → `seed.sql` → `ist_now` → `check_staff` → `allowed_capacities` → `available_tables` → `available_slots` → `seat_map` → `can_cancel` → `book_table` → `cancel_reservation` → `seat_reservation` → `complete_reservation` → `mark_no_show` → `extend_reservation` → `reassign_table`.**
 
 ### Key schema facts
 - `reservation.period` is a `tsrange` in IST wall-clock time, stored as `[start, end)`. Default sitting is 2 hours, and staff can extend it.
@@ -70,11 +71,13 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 
 ## Next Up (pick up here)
 
-1. **Run and test `extend_reservation`** (happy path, clash with next booking, past 23:00, not seated).
-2. **`reassign_table(reservation, staff, new table)`**: receptionist only; move to another table at the same restaurant; exclusion constraint guards clashes. Add to load order.
-3. Commit + push. Then Day 5: triggers.
+1. Commit + push Day 4.
+2. **Day 5: triggers.** Candidates: party fits table capacity (incl. halls 11+), block illegal status transitions, auto-set `seated_at` / `cancelled_at`.
 
 ### Reminders for later steps
+- **`table_id` ≠ `table_number`.** Ids are global across restaurants and the seed's `INSERT … SELECT … JOIN` doesn't fix their order. In tests, look tables up by `(restaurant_id, table_number)` with `\gset`, never hard-code ids. Staff/UI only ever see table numbers.
+- Test pattern: `\set ON_ERROR_ROLLBACK on`, `BEGIN`, inserts with `RETURNING … \gset`, the `CALL`s, `ROLLBACK`.
+- Screenshots: user takes them all in one pass at the end. Don't prompt for them while working.
 - **Deferred: `book_table` race test** (📸 live, two terminals). Steps are in LATER.md.
 - `CALL` arguments can't contain subqueries. Pass plain ids (that's how Go will call it anyway). `lastval()` is fine (e.g. `CALL seat_reservation(lastval(), 2)` right after `book_table`).
 - Seed staff ids: 1 = Spice Route waiter, 2 = Spice Route receptionist, 3 = Coastal waiter, 4 = Coastal receptionist. Users: 1 Aarav, 2 Priya, 3 Rohan, 4 Meera (unverified). Restaurants: 1 Spice Route, 2 Coastal Kitchen.
