@@ -4,3 +4,6 @@ PROJECT_PLAN.md
 
 # Secrets
 .env
+
+# Generated knowledge graph
+graphify-out/
