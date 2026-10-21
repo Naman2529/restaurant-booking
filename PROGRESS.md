@@ -59,8 +59,9 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 | `db/triggers/party_fits_table.sql` | BEFORE INSERT OR UPDATE OF `party_size, table_id`: table capacity must be in `allowed_capacities(party)`. Backstop for raw writes (defence in depth with the procedures) | Run and tested (8 cases, existing rows checked) |
 | `db/triggers/status_transition.sql` | BEFORE UPDATE OF `status`: only `booked→seated/cancelled/no_show` and `seated→completed`; same-status is a no-op. INSERT not checked on purpose (super admin / seed can insert any status; app only goes through `book_table`) | Run and tested (9 cases) |
 | `db/triggers/status_timestamps.sql` | BEFORE UPDATE OF `status`: sets `seated_at` / `cancelled_at` to `now()`, overwriting any value passed (no backdating). Procedures still set them too; kept on purpose | Run and tested |
+| `db/cursors/no_show_sweep.sql` | `no_show_sweep(restaurant, staff, INOUT marked, INOUT skipped)`: explicit cursor (OPEN/FETCH/CLOSE) over `booked` rows with start + 15 min ≤ now; calls `mark_no_show` per row inside `BEGIN … EXCEPTION` (savepoint), so one failure is skipped and logged and the loop goes on. NOTICE per row. Why not one UPDATE: reuses `mark_no_show` rules, per-row error isolation, per-row log | Run and tested (wrong staff, 2 marked, seated + other restaurant ignored, second run = 0). Skip path untested (needs 2 sessions, do with race test) |
 
-**Load order (files have no number prefixes, so run them in exactly this order): `schema.sql` → `seed.sql` → `ist_now` → `check_staff` → `allowed_capacities` → `available_tables` → `available_slots` → `seat_map` → `can_cancel` → `book_table` → `cancel_reservation` → `seat_reservation` → `complete_reservation` → `mark_no_show` → `extend_reservation` → `reassign_table` → `party_fits_table` → `status_transition` → `status_timestamps`.**
+**Load order (files have no number prefixes, so run them in exactly this order): `schema.sql` → `seed.sql` → `ist_now` → `check_staff` → `allowed_capacities` → `available_tables` → `available_slots` → `seat_map` → `can_cancel` → `book_table` → `cancel_reservation` → `seat_reservation` → `complete_reservation` → `mark_no_show` → `extend_reservation` → `reassign_table` → `party_fits_table` → `status_transition` → `status_timestamps` → `no_show_sweep`.**
 
 ### Key schema facts
 - `reservation.period` is a `tsrange` in IST wall-clock time, stored as `[start, end)`. Default sitting is 2 hours, and staff can extend it.
@@ -75,7 +76,7 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 ## Next Up (pick up here)
 
 1. Commit + push Day 5.
-2. **Day 6:** a cursor with a real row-by-row job, group objects into schemas ("packages"), one test script that resets the DB and exercises every object. **DB layer done.**
+2. **Day 6:** ~~cursor~~ done (`no_show_sweep`). Left: group objects into schemas ("packages"), one test script that resets the DB and exercises every object. **DB layer done.**
 
 - **Day 7 note:** the Go app's limited DB role gets no direct INSERT/UPDATE on `reservation`, only EXECUTE on procedures. That needs the procedures to be `SECURITY DEFINER`.
 - psql: a `=*#` prompt means a transaction is still open. Make sure it's `=#` before `\i`-ing a file, or a later `ROLLBACK` undoes the CREATE too.

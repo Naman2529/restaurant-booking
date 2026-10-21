@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION trg_status_timestamps()
+CREATE OR REPLACE FUNCTION util.trg_status_timestamps()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
@@ -20,4 +20,4 @@ $$;
 CREATE OR REPLACE TRIGGER status_timestamps
 BEFORE UPDATE OF status ON reservation
 FOR EACH ROW
-EXECUTE FUNCTION trg_status_timestamps();
+EXECUTE FUNCTION util.trg_status_timestamps();

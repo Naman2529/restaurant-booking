@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE cancel_reservation(
+CREATE OR REPLACE PROCEDURE customer.cancel_reservation(
     p_reservation_id bigint,
     p_user_id        bigint
 )
@@ -25,7 +25,7 @@ BEGIN
         RAISE EXCEPTION 'reservation % is % and cannot be cancelled', p_reservation_id, v_status;
     END IF;
 
-    IF NOT can_cancel(p_reservation_id, p_user_id) THEN
+    IF NOT customer.can_cancel(p_reservation_id, p_user_id) THEN
         RAISE EXCEPTION 'reservation % starts in less than 15 minutes and cannot be cancelled', p_reservation_id;
     END IF;
 

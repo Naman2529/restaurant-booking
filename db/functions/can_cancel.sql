@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION can_cancel(
+CREATE OR REPLACE FUNCTION customer.can_cancel(
     p_reservation_id bigint,
     p_user_id        bigint
 )
@@ -12,6 +12,6 @@ AS $$
         WHERE r.reservation_id = p_reservation_id
           AND r.user_id = p_user_id
           AND r.status = 'booked'
-          AND ist_now() <= lower(r.period) - interval '15 minutes'
+          AND util.ist_now() <= lower(r.period) - interval '15 minutes'
     );
 $$;

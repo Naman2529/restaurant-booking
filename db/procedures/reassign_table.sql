@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE reassign_table(
+CREATE OR REPLACE PROCEDURE staff.reassign_table(
     p_reservation_id bigint,
     p_staff_id       bigint,
     p_new_table_id   bigint
@@ -25,7 +25,7 @@ BEGIN
         RAISE EXCEPTION 'reservation % does not exist', p_reservation_id;
     END IF;
 
-    PERFORM check_staff(p_staff_id, v_restaurant_id, ARRAY['receptionist']);
+    PERFORM util.check_staff(p_staff_id, v_restaurant_id, ARRAY['receptionist']);
 
     IF v_status <> 'booked' THEN
         RAISE EXCEPTION 'reservation % is % and cannot be reassigned', p_reservation_id, v_status;
@@ -48,7 +48,7 @@ BEGIN
         RAISE EXCEPTION 'reservation % is already on table %', p_reservation_id, v_new_number;
     END IF;
 
-    IF NOT v_new_capacity = ANY (allowed_capacities(v_party_size)) THEN
+    IF NOT v_new_capacity = ANY (util.allowed_capacities(v_party_size)) THEN
         RAISE EXCEPTION 'table % (capacity %) is not allowed for a party of %',
             v_new_number, v_new_capacity, v_party_size;
     END IF;

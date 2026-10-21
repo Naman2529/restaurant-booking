@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION trg_status_transition()
+CREATE OR REPLACE FUNCTION util.trg_status_transition()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
@@ -24,4 +24,4 @@ $$;
 CREATE OR REPLACE TRIGGER status_transition
 BEFORE UPDATE OF status ON reservation
 FOR EACH ROW
-EXECUTE FUNCTION trg_status_transition();
+EXECUTE FUNCTION util.trg_status_transition();

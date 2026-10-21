@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE mark_no_show(
+CREATE OR REPLACE PROCEDURE staff.mark_no_show(
     p_reservation_id bigint,
     p_staff_id       bigint
 )
@@ -20,13 +20,13 @@ BEGIN
         RAISE EXCEPTION 'reservation % does not exist', p_reservation_id;
     END IF;
 
-    PERFORM check_staff(p_staff_id, v_restaurant_id, ARRAY['receptionist', 'waiter']);
+    PERFORM util.check_staff(p_staff_id, v_restaurant_id, ARRAY['receptionist', 'waiter']);
 
     IF v_status <> 'booked' THEN
         RAISE EXCEPTION 'reservation % is % and cannot be marked no-show', p_reservation_id, v_status;
     END IF;
 
-    IF ist_now() < lower(v_period) THEN
+    IF util.ist_now() < lower(v_period) THEN
         RAISE EXCEPTION 'reservation % starts at %, too early to mark no-show', p_reservation_id, lower(v_period);
     END IF;
 

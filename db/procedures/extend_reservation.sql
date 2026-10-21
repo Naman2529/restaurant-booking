@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE extend_reservation(
+CREATE OR REPLACE PROCEDURE staff.extend_reservation(
     p_reservation_id bigint,
     p_staff_id       bigint,
     p_extra          interval
@@ -25,7 +25,7 @@ BEGIN
         RAISE EXCEPTION 'reservation % does not exist', p_reservation_id;
     END IF;
 
-    PERFORM check_staff(p_staff_id, v_restaurant_id, ARRAY['receptionist', 'waiter']);
+    PERFORM util.check_staff(p_staff_id, v_restaurant_id, ARRAY['receptionist', 'waiter']);
 
     IF v_status <> 'seated' THEN
         RAISE EXCEPTION 'reservation % is % and cannot be extended', p_reservation_id, v_status;

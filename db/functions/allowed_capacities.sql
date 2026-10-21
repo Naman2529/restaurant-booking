@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION allowed_capacities(p_party_size int)
+CREATE OR REPLACE FUNCTION util.allowed_capacities(p_party_size int)
 RETURNS int[]
 LANGUAGE sql
 IMMUTABLE

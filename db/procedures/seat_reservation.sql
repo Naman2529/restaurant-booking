@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE seat_reservation(
+CREATE OR REPLACE PROCEDURE staff.seat_reservation(
     p_reservation_id bigint,
     p_staff_id       bigint
 )
@@ -20,17 +20,17 @@ BEGIN
         RAISE EXCEPTION 'reservation % does not exist', p_reservation_id;
     END IF;
 
-    PERFORM check_staff(p_staff_id, v_restaurant_id, ARRAY['receptionist']);
+    PERFORM util.check_staff(p_staff_id, v_restaurant_id, ARRAY['receptionist']);
 
     IF v_status <> 'booked' THEN
         RAISE EXCEPTION 'reservation % is % and cannot be seated', p_reservation_id, v_status;
     END IF;
 
-    IF ist_now() < lower(v_period) - interval '30 minutes' THEN
+    IF util.ist_now() < lower(v_period) - interval '30 minutes' THEN
         RAISE EXCEPTION 'reservation % starts at %, too early to seat', p_reservation_id, lower(v_period);
     END IF;
 
-    IF ist_now() >= upper(v_period) THEN
+    IF util.ist_now() >= upper(v_period) THEN
         RAISE EXCEPTION 'reservation % has already ended', p_reservation_id;
     END IF;
 

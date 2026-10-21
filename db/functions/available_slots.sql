@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION available_slots(
+CREATE OR REPLACE FUNCTION customer.available_slots(
     p_restaurant_id bigint,
     p_date          date,
     p_party_size    int
@@ -13,8 +13,8 @@ AS $$
              p_date + time '21:00',
              interval '30 minutes'
          ) AS s(slot_start)
-    CROSS JOIN LATERAL available_tables(p_restaurant_id, s.slot_start, p_party_size) AS a
-    WHERE s.slot_start > ist_now()
+    CROSS JOIN LATERAL customer.available_tables(p_restaurant_id, s.slot_start, p_party_size) AS a
+    WHERE s.slot_start > util.ist_now()
     GROUP BY s.slot_start
     ORDER BY s.slot_start;
 $$;

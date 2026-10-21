@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION check_staff(
+CREATE OR REPLACE FUNCTION util.check_staff(
     p_staff_id      bigint,
     p_restaurant_id bigint,
     p_roles         text[]

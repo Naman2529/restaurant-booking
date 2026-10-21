@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION seat_map(p_restaurant_id bigint)
+CREATE OR REPLACE FUNCTION staff.seat_map(p_restaurant_id bigint)
 RETURNS TABLE (
     table_id       bigint,
     table_number   int,
@@ -14,9 +14,9 @@ AS $$
            t.table_number,
            t.capacity,
            CASE
-               WHEN r.status = 'seated' AND ist_now() < upper(r.period) THEN 'red'
+               WHEN r.status = 'seated' AND util.ist_now() < upper(r.period) THEN 'red'
                WHEN r.status = 'seated'                                 THEN 'orange'
-               WHEN r.status = 'booked' AND lower(r.period) <= ist_now() THEN 'gray'
+               WHEN r.status = 'booked' AND lower(r.period) <= util.ist_now() THEN 'gray'
                WHEN r.status = 'booked'                                 THEN 'transparent'
                ELSE 'green'
            END,
@@ -30,8 +30,8 @@ AS $$
           AND (
                 r.status = 'seated'
              OR (r.status = 'booked'
-                 AND lower(r.period) <= ist_now() + interval '30 minutes'
-                 AND ist_now() < upper(r.period))
+                 AND lower(r.period) <= util.ist_now() + interval '30 minutes'
+                 AND util.ist_now() < upper(r.period))
           )
         ORDER BY r.status = 'seated' DESC, lower(r.period)
         LIMIT 1

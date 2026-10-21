@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE book_table(
+CREATE OR REPLACE PROCEDURE customer.book_table(
     p_user_id        bigint,
     p_restaurant_id  bigint,
     p_start          timestamp,
@@ -11,7 +11,7 @@ DECLARE
     v_verified timestamptz;
     v_table_id bigint;
 BEGIN
-    IF p_start <= ist_now() THEN
+    IF p_start <= util.ist_now() THEN
         RAISE EXCEPTION 'start time % is in the past', p_start;
     END IF;
 
@@ -29,7 +29,7 @@ BEGIN
 
     FOR v_table_id IN
         SELECT a.table_id
-        FROM available_tables(p_restaurant_id, p_start, p_party_size) a
+        FROM customer.available_tables(p_restaurant_id, p_start, p_party_size) a
     LOOP
         BEGIN
             INSERT INTO reservation (user_id, table_id, party_size, period)
