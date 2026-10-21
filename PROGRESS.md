@@ -2,9 +2,9 @@
 
 Session handoff file. Read this first in a new session, then README.md (rules) and LATER.md (deferred items).
 
-**Last updated:** Tue 20 Oct 2026.
+**Last updated:** Wed 21 Oct 2026.
 **Deadline:** Sat 24 Oct, 11:59 PM. Aim to submit 23 Oct.
-**Status:** Days 1–2 done (all 6 functions + `check_staff` helper). Day 3 booking procedure done; race test deferred. Day 4 done (all 7 procedures run and tested). Day 5 done (3 triggers run and tested). Calendar says Day 9 (Wed 21 Oct), so about 3 days behind. Original schedule kept; user is catching up.
+**Status:** DB layer done. Days 1–5 done; Day 6 cursor + packages done, `reset.sql` runs clean. Deferred to the final pass (after the front end): the "test every object" script, all screenshots, and the `book_table` race test. Starting **Day 7** (Go foundation). Calendar says Day 9 (Wed 21 Oct), so about 2–3 days behind. Original schedule kept; user is catching up.
 
 ---
 
@@ -61,7 +61,10 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 | `db/triggers/status_timestamps.sql` | BEFORE UPDATE OF `status`: sets `seated_at` / `cancelled_at` to `now()`, overwriting any value passed (no backdating). Procedures still set them too; kept on purpose | Run and tested |
 | `db/cursors/no_show_sweep.sql` | `no_show_sweep(restaurant, staff, INOUT marked, INOUT skipped)`: explicit cursor (OPEN/FETCH/CLOSE) over `booked` rows with start + 15 min ≤ now; calls `mark_no_show` per row inside `BEGIN … EXCEPTION` (savepoint), so one failure is skipped and logged and the loop goes on. NOTICE per row. Why not one UPDATE: reuses `mark_no_show` rules, per-row error isolation, per-row log | Run and tested (wrong staff, 2 marked, seated + other restaurant ignored, second run = 0). Skip path untested (needs 2 sessions, do with race test) |
 
-**Load order (files have no number prefixes, so run them in exactly this order): `schema.sql` → `seed.sql` → `ist_now` → `check_staff` → `allowed_capacities` → `available_tables` → `available_slots` → `seat_map` → `can_cancel` → `book_table` → `cancel_reservation` → `seat_reservation` → `complete_reservation` → `mark_no_show` → `extend_reservation` → `reassign_table` → `party_fits_table` → `status_transition` → `status_timestamps` → `no_show_sweep`.**
+| `db/schema/packages.sql` | "Packages" = 3 Postgres schemas: `util` (helpers + trigger functions), `customer` (slots, tables, book, cancel, can_cancel), `staff` (seat map, seat, complete, no-show, extend, reassign, sweep). Every object is schema-qualified, and so is every call between them | Run |
+| `db/reset.sql` | Rebuilds the whole DB in one go with `\ir`: packages → schema → seed → util → customer → staff → triggers | Run clean (21 Oct) |
+
+**Load order: just run `psql -f db/reset.sql`** (after loading `.env`). It drops and recreates everything. Old unprefixed copies in `public` were dropped on 21 Oct. Don't drop all of `public`: the citext / pgcrypto / btree_gist functions live there.
 
 ### Key schema facts
 - `reservation.period` is a `tsrange` in IST wall-clock time, stored as `[start, end)`. Default sitting is 2 hours, and staff can extend it.
@@ -75,10 +78,13 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 
 ## Next Up (pick up here)
 
-1. Commit + push Day 5.
-2. **Day 6:** ~~cursor~~ done (`no_show_sweep`). Left: group objects into schemas ("packages"), one test script that resets the DB and exercises every object. **DB layer done.**
+1. Commit + push the Day 6 packages work.
+2. **Day 7 (Go foundation):** `backend/`, module `github.com/Naman2529/restaurant-booking/backend`. Echo + pgx (`pgxpool`). Layout: `cmd/server/main.go`, `internal/config/config.go`, `internal/db/db.go`. Units in order: config → DB pool → main + first route → limited DB role (`db/roles.sql`).
+   - **No migration tool** (decided 21 Oct): goose / golang-migrate can't run psql `\ir`, and the rubric doesn't need one. `reset.sql` stays the way to build the DB.
+   - Go calls must be schema-qualified: `CALL customer.book_table(...)`, `SELECT * FROM staff.seat_map(...)`.
 
 - **Day 7 note:** the Go app's limited DB role gets no direct INSERT/UPDATE on `reservation`, only EXECUTE on procedures. That needs the procedures to be `SECURITY DEFINER`.
+- **Final pass (after the front end):** the "test every object" script (reset + exercise every object), all screenshots, and the `book_table` race test.
 - psql: a `=*#` prompt means a transaction is still open. Make sure it's `=#` before `\i`-ing a file, or a later `ROLLBACK` undoes the CREATE too.
 
 ### Reminders for later steps
@@ -92,7 +98,7 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 - `available_tables` is advisory. The exclusion constraint is the real guarantee (report point).
 - Postgres burns identity numbers on failed / rolled-back inserts, so reservation ids have gaps. Normal.
 - **Day 6 "packages"** = Postgres schemas used as namespaces (faculty accepted this).
-- **Day 7:** the Go app should connect as a **limited DB role** (can execute procedures, can't alter tables), not as `postgres`. Also choose a migration tool (golang-migrate or goose), which replaces the DROP-and-recreate approach.
+- **Day 7:** the Go app should connect as a **limited DB role** (can execute procedures, can't alter tables), not as `postgres`.
 
 ---
 
