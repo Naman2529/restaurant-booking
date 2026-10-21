@@ -12,7 +12,7 @@ DECLARE
     v_table_id bigint;
 BEGIN
     IF p_start <= util.ist_now() THEN
-        RAISE EXCEPTION 'start time % is in the past', p_start;
+        RAISE EXCEPTION 'start time % is in the past', p_start USING ERRCODE = 'RB422';
     END IF;
 
     SELECT email_verified_at INTO v_verified
@@ -20,11 +20,11 @@ BEGIN
     WHERE user_id = p_user_id;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'user % does not exist', p_user_id;
+        RAISE EXCEPTION 'user account not found' USING ERRCODE = 'RB404';
     END IF;
 
     IF v_verified IS NULL THEN
-        RAISE EXCEPTION 'user % has not verified their email', p_user_id;
+        RAISE EXCEPTION 'verify your email before booking' USING ERRCODE = 'RB403';
     END IF;
 
     FOR v_table_id IN
@@ -43,6 +43,6 @@ BEGIN
         END;
     END LOOP;
 
-    RAISE EXCEPTION 'no table available for % people at %', p_party_size, p_start;
+    RAISE EXCEPTION 'no table available for % people at %', p_party_size, p_start USING ERRCODE = 'RB409';
 END;
 $$;

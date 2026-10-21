@@ -15,6 +15,10 @@
 \ir functions/can_cancel.sql
 \ir procedures/book_table.sql
 \ir procedures/cancel_reservation.sql
+\ir procedures/sign_up.sql
+\ir procedures/verify_email.sql
+\ir procedures/resend_verification.sql
+\ir functions/customer_login.sql
 
 -- staff
 \ir functions/seat_map.sql
@@ -24,8 +28,14 @@
 \ir procedures/extend_reservation.sql
 \ir procedures/reassign_table.sql
 \ir cursors/no_show_sweep.sql
+\ir functions/staff_login.sql
+
+-- auth
+\ir procedures/revoke_token.sql
+\ir functions/is_revoked.sql
 
 -- triggers
 \ir triggers/party_fits_table.sql
 \ir triggers/status_transition.sql
 \ir triggers/status_timestamps.sql
+\ir roles.sql

@@ -13,7 +13,7 @@ BEGIN
 
     IF NOT v_capacity = ANY (util.allowed_capacities(NEW.party_size)) THEN
         RAISE EXCEPTION 'table % (capacity %) is not allowed for a party of %',
-            v_table_number, v_capacity, NEW.party_size;
+            v_table_number, v_capacity, NEW.party_size USING ERRCODE = 'RB422';
     END IF;
 
     RETURN NEW;

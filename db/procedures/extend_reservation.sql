@@ -11,7 +11,7 @@ DECLARE
     v_restaurant_id bigint;
 BEGIN
     IF p_extra <= interval '0' THEN
-        RAISE EXCEPTION 'extension must be positive, got %', p_extra;
+        RAISE EXCEPTION 'extension must be positive, got %', p_extra USING ERRCODE = 'RB422';
     END IF;
 
     SELECT r.status, r.period, t.restaurant_id
@@ -22,13 +22,13 @@ BEGIN
     FOR UPDATE OF r;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'reservation % does not exist', p_reservation_id;
+        RAISE EXCEPTION 'reservation not found' USING ERRCODE = 'RB404';
     END IF;
 
     PERFORM util.check_staff(p_staff_id, v_restaurant_id, ARRAY['receptionist', 'waiter']);
 
     IF v_status <> 'seated' THEN
-        RAISE EXCEPTION 'reservation % is % and cannot be extended', p_reservation_id, v_status;
+        RAISE EXCEPTION 'reservation % is % and cannot be extended', p_reservation_id, v_status USING ERRCODE = 'RB409';
     END IF;
 
     BEGIN
@@ -37,9 +37,9 @@ BEGIN
         WHERE reservation_id = p_reservation_id;
     EXCEPTION
         WHEN exclusion_violation THEN
-            RAISE EXCEPTION 'cannot extend reservation %: the next booking on this table conflicts', p_reservation_id;
+            RAISE EXCEPTION 'cannot extend reservation %: the next booking on this table conflicts', p_reservation_id USING ERRCODE = 'RB409';
         WHEN check_violation THEN
-            RAISE EXCEPTION 'cannot extend reservation %: it would end after 23:00', p_reservation_id;
+            RAISE EXCEPTION 'cannot extend reservation %: it would end after 23:00', p_reservation_id USING ERRCODE = 'RB422';
     END;
 END;
 $$;

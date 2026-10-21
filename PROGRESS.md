@@ -2,9 +2,9 @@
 
 Session handoff file. Read this first in a new session, then README.md (rules) and LATER.md (deferred items).
 
-**Last updated:** Wed 21 Oct 2026.
+**Last updated:** Thu 22 Oct 2026.
 **Deadline:** Sat 24 Oct, 11:59 PM. Aim to submit 23 Oct.
-**Status:** DB layer done. Days 1–5 done; Day 6 cursor + packages done, `reset.sql` runs clean. Deferred to the final pass (after the front end): the "test every object" script, all screenshots, and the `book_table` race test. Starting **Day 7** (Go foundation). Calendar says Day 9 (Wed 21 Oct), so about 2–3 days behind. Original schedule kept; user is catching up.
+**Status:** DB layer done (Days 1–6). Day 7 done (Go server, limited `booking_app` role). **Day 8 in progress: units 1–3 of 7 done** (error codes, auth SQL, JWT + cookie middleware), **plus 5 limitation fixes** (no-leak errors, link expiry + resend, bcrypt in Go, logout revocation, Gmail). Units 4–7 left (error mapping, auth routes, customer routes, staff routes). Deferred to the final pass (after the front end): the "test every object" script, all screenshots, and the `book_table` race test. Calendar says Day 10 (Thu 22 Oct), so about 2 days behind. Original schedule kept; user is catching up.
 
 ---
 
@@ -62,7 +62,19 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 | `db/cursors/no_show_sweep.sql` | `no_show_sweep(restaurant, staff, INOUT marked, INOUT skipped)`: explicit cursor (OPEN/FETCH/CLOSE) over `booked` rows with start + 15 min ≤ now; calls `mark_no_show` per row inside `BEGIN … EXCEPTION` (savepoint), so one failure is skipped and logged and the loop goes on. NOTICE per row. Why not one UPDATE: reuses `mark_no_show` rules, per-row error isolation, per-row log | Run and tested (wrong staff, 2 marked, seated + other restaurant ignored, second run = 0). Skip path untested (needs 2 sessions, do with race test) |
 
 | `db/schema/packages.sql` | "Packages" = 3 Postgres schemas: `util` (helpers + trigger functions), `customer` (slots, tables, book, cancel, can_cancel), `staff` (seat map, seat, complete, no-show, extend, reassign, sweep). Every object is schema-qualified, and so is every call between them | Run |
-| `db/reset.sql` | Rebuilds the whole DB in one go with `\ir`: packages → schema → seed → util → customer → staff → triggers | Run clean (21 Oct) |
+| `db/reset.sql` | Rebuilds the whole DB in one go with `\ir`: packages → schema → seed → util → customer → staff → triggers → roles | Run clean (21 Oct) |
+| `db/roles.sql` | `booking_app` login role (password from `APP_DB_PASSWORD` via `\getenv`). Every routine in `customer` / `staff` becomes `SECURITY DEFINER` with a pinned `search_path` (loop over `pg_proc`). EXECUTE revoked from PUBLIC, granted to `booking_app` on `customer` + `staff` only. `util` hidden. Tables: SELECT only | Run and tested (book via procedure ✅, direct UPDATE denied ✅, `util.ist_now()` denied ✅) |
+| `backend/internal/config/config.go` | Loads `.env` (godotenv, current dir then parent, never overrides). Requires `PGHOST`, `PGPORT`, `PGDATABASE`, `APP_DB_PASSWORD`. `HTTP_PORT` (default 8080), `APP_DB_USER` (default `booking_app`) | Built |
+| `backend/internal/db/db.go` | `Connect(ctx, user, password)`: `pgxpool.ParseConfig("")` reads `PG*`, then user/password swapped for the app role. Pings with a 5 s timeout at startup | Built |
+| `backend/cmd/server/main.go` | Config → DB → Echo (Logger + Recover). `GET /health` returns `current_user` (shows `booking_app`). Ctrl+C = graceful shutdown (10 s) | Run and tested |
+| **Day 8 unit 1:** error codes | Every `RAISE EXCEPTION` in procedures / functions / triggers now has `USING ERRCODE`: `RB404` not found, `RB403` not allowed (wrong owner / role / restaurant, unverified), `RB409` state or time clash (wrong status, too early, <15 min, no table, table taken), `RB422` bad input (past start, bad extension, past 23:00, capacity). Last 3 chars = HTTP status. Postgres's own: `23P01` → 409, `23514` → 422, rest → 500 | Run and tested (RB404 / RB403 / RB422 / RB403 seen with `\set VERBOSITY verbose`) |
+| **Day 8 unit 2:** `app_user.verify_token_hash` + `db/procedures/sign_up.sql`, `verify_email.sql`, `db/functions/customer_login.sql`, `staff_login.sql` | `customer.sign_up(email, name, phone, password, INOUT user_id, INOUT verify_token)`: validates (RB422), bcrypt via pgcrypto, random 32-byte token returned once, only its SHA-256 stored, duplicate email → RB409. `customer.verify_email(token, INOUT user_id)`: single-use (clears hash), bad/used → RB404. `customer.login(email citext, password)` / `staff.login(...)`: password checked in Postgres; 0 rows = bad credentials (no "which one was wrong"). Unverified users can log in; `book_table` stops them booking. All picked up by `roles.sql` automatically | Run and tested as `booking_app` (sign-up, case-insensitive login, wrong password, duplicate, bad email, short password, staff login, verify once ✅ / twice → RB404) |
+| **Day 8 unit 3:** `backend/internal/auth/auth.go` + `auth_test.go`, config `JWT_SECRET` (≥ 32 chars, in `.env`) + `COOKIE_SECURE` | JWT HS256 (golang-jwt/v5), 12 h. Claims: `kind` (customer/staff), `sub` (id); staff also `rid` + `role`, so staff routes take the restaurant from the token, never the client. Only HS256 accepted. `SetCookie` / `ClearCookie`: `HttpOnly`, `SameSite=Strict`, per-kind name (`rb_customer` / `rb_staff`). `Require(kind)` reads cookie first, then `Authorization: Bearer` (curl / tests); 401 no/bad token, 403 wrong kind. `auth.From(c)` gives handlers the claims. Role (receptionist/waiter) NOT checked in Go: `check_staff` in the DB is the one source of truth | Tested (all PASS) |
+| **Fix 1:** no-leak errors | "Not yours" (cancel), "other restaurant's reservation" (`check_staff`) and "other restaurant's table" (reassign) now raise exactly the same `RB404 reservation not found` / `table not found` as a missing id. No user / staff ids in any message. Unverified booking → `RB403 verify your email before booking` | Run and tested |
+| **Fix 2:** link expiry + resend | `app_user.verify_token_expires_at` + CHECK `verify_token_pair` (hash and expiry set/cleared together). `sign_up` sets now() + 24 h; `verify_email` rejects expired (`RB404 ... invalid, expired or already used`). New `customer.resend_verification(email, INOUT token)`: new token for unverified users only, NULL (no error) for unknown / verified emails so it can't reveal who's registered | Run and tested (Meera resend → verify; expired → RB404) |
+| **Fix 3:** bcrypt in Go | `customer.sign_up` now takes `p_password_hash` and rejects anything not shaped like bcrypt (60 chars, `$2…`). `customer.login` / `staff.login` **renamed** `customer.login_info` / `staff.login_info`: return the account + `password_hash`, no check in SQL. `internal/auth/password.go`: `HashPassword` (8–72 chars, cost 10), `CheckPassword(hash, pw)` (pass `""` for unknown email: compares against a dummy hash so timing doesn't reveal which emails exist). Seed still uses pgcrypto (cost 6); compatible, tested | Run and tested |
+| **Fix 4:** logout revocation | New 4th schema **`auth`** (`packages.sql`, `roles.sql` grant it). Table `revoked_token(jti PK, expires_at)`. `auth.revoke_token(jti, expires_at)` (idempotent, deletes expired rows), `auth.is_revoked(jti)`. Go: every token gets a random 16-byte `jti`; `Tokens.Revoke(ctx, claims)`; `Require` checks `IsRevoked` (DB error → refuse). `NewTokens(secret, secureCookie, store)`; `auth.PGRevocations{Pool}` is the DB store. `Claims.ID()` renamed **`SubjectID()`** (`ID` is the jti now) | Run and tested (incl. `booking_app` can't delete from the list) |
+| **Fix 5:** Gmail | `internal/mail`: `Sender` interface; `mail.New(user, pw)` → `Gmail` (smtp.gmail.com:587, STARTTLS, 15 s timeout) or `LogSender` (prints link) if not configured. `VerifyLink(base, token)` → `<base>/auth/verify?token=…`. Address parsed first (blocks header injection). Config: `SMTP_USER` + `SMTP_PASSWORD` (both or neither), `APP_BASE_URL` (default `http://localhost:<port>`). Dev tool: `go run ./cmd/mailtest <to>` | Tested; real email sent to namanbhatia2501@gmail.com |
 
 **Load order: just run `psql -f db/reset.sql`** (after loading `.env`). It drops and recreates everything. Old unprefixed copies in `public` were dropped on 21 Oct. Don't drop all of `public`: the citext / pgcrypto / btree_gist functions live there.
 
@@ -78,12 +90,23 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 
 ## Next Up (pick up here)
 
-1. Commit + push the Day 6 packages work.
-2. **Day 7 (Go foundation):** `backend/`, module `github.com/Naman2529/restaurant-booking/backend`. Echo + pgx (`pgxpool`). Layout: `cmd/server/main.go`, `internal/config/config.go`, `internal/db/db.go`. Units in order: config → DB pool → main + first route → limited DB role (`db/roles.sql`).
-   - **No migration tool** (decided 21 Oct): goose / golang-migrate can't run psql `\ir`, and the rubric doesn't need one. `reset.sql` stays the way to build the DB.
-   - Go calls must be schema-qualified: `CALL customer.book_table(...)`, `SELECT * FROM staff.seat_map(...)`.
+1. Commit + push: `git add db backend PROGRESS.md` (LATER.md is gitignored).
+2. **Day 8, unit 4:** `internal/api/errors.go`: DB error → HTTP (RBxxx → last 3 digits, 23P01 → 409, 23514 → 422, else 500 with the detail only in the server log).
+3. Unit 5: auth routes. Sign-up: `auth.HashPassword` → `CALL customer.sign_up` → `mail.Sender.SendVerification(VerifyLink(...))` (if sending fails, still 201 and log it; user can resend). `GET /auth/verify?token=` → `customer.verify_email`. `POST /auth/resend` → always the same answer. Customer / staff login: `login_info` → `auth.CheckPassword` (pass `""` if no row) → issue token, set cookie AND return it. Logout: `tokens.Revoke` + `ClearCookie`. Wire `auth.NewTokens(cfg.JWTSecret, cfg.CookieSecure, auth.PGRevocations{Pool: pool})` and `mail.New(cfg.SMTPUser, cfg.SMTPPassword)` in `main.go`.
+6. Unit 6: customer routes (restaurants, slots, book, my reservations, cancel).
+7. Unit 7: staff routes (seat map, seat, complete, no-show, extend, reassign by table **number**, no-show sweep). Then wire everything in `main.go`.
 
-- **Day 7 note:** the Go app's limited DB role gets no direct INSERT/UPDATE on `reservation`, only EXECUTE on procedures. That needs the procedures to be `SECURITY DEFINER`.
+- **Day 8 decisions (22 Oct, user):** JWT (not server sessions), sign-up with the verify link printed to the server log (not emailed), `ERRCODE` on every `RAISE` (not "everything is 400"). Later: **cookie + header** both supported (cookie for browsers, header for curl / tests).
+- **API layout (planned, explained to user, not created yet):** one `internal/api` package: `errors.go`, `routes.go`, `auth_handlers.go`, `customer_handlers.go`, `staff_handlers.go`. Handlers stay thin: JSON in → `CALL` procedure → map error → JSON out. Postgres is the "service layer", no models folder (no ORM). User may still prefer `routes/` + `handlers/` folders: ask before creating unit 4.
+- **Commands:** by default the user runs them and pastes the output. When the user says "run it yourself", Claude runs them (load `.env` first; `reset.sql` from the root; `go` from `backend/`). Never commit / push unasked.
+
+- **Backend facts:** `backend/`, module `github.com/Naman2529/restaurant-booking/backend`. Echo v4 + pgx v5 (`pgxpool`). Run with `go run ./cmd/server` from `backend/` (no need to load `.env` by hand for Go). After adding an import, run `go mod tidy`.
+- **No migration tool** (decided 21 Oct): goose / golang-migrate can't run psql `\ir`, and the rubric doesn't need one. `reset.sql` stays the way to build the DB.
+- Go calls must be schema-qualified: `CALL customer.book_table(...)`, `SELECT * FROM staff.seat_map(...)`.
+- `booking_app` can't INSERT/UPDATE anything. Any new write the app needs (e.g. sign-up, verify email) needs a new procedure in `customer` / `staff`, then re-run `reset.sql` so `roles.sql` picks it up.
+- `.env` now also has `APP_DB_PASSWORD`, `HTTP_PORT`, `JWT_SECRET`, `SMTP_USER`, `SMTP_PASSWORD`, `APP_BASE_URL`.
+- Schemas are now 4: `util`, `customer`, `staff`, **`auth`** (logout). psql still logs in as `postgres` (`PGUSER`); Go as `booking_app`.
+- Report "Discussion" material (talked through 22 Oct): trade-offs of putting rules in the DB. Constraints = uncontroversial; procedures/triggers = debated (harder testing, weak tooling, migrations, DB is hardest to scale, bcrypt CPU in Postgres, Postgres lock-in, two languages, user-facing messages in SQL, SECURITY DEFINER risk) vs. wins (concurrency guarantee, every client protected, fewer round trips, rubric).
 - **Final pass (after the front end):** the "test every object" script (reset + exercise every object), all screenshots, and the `book_table` race test.
 - psql: a `=*#` prompt means a transaction is still open. Make sure it's `=#` before `\i`-ing a file, or a later `ROLLBACK` undoes the CREATE too.
 
@@ -98,7 +121,6 @@ Session handoff file. Read this first in a new session, then README.md (rules) a
 - `available_tables` is advisory. The exclusion constraint is the real guarantee (report point).
 - Postgres burns identity numbers on failed / rolled-back inserts, so reservation ids have gaps. Normal.
 - **Day 6 "packages"** = Postgres schemas used as namespaces (faculty accepted this).
-- **Day 7:** the Go app should connect as a **limited DB role** (can execute procedures, can't alter tables), not as `postgres`.
 
 ---
 

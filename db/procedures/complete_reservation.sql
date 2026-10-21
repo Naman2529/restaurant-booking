@@ -16,13 +16,13 @@ BEGIN
     FOR UPDATE OF r;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'reservation % does not exist', p_reservation_id;
+        RAISE EXCEPTION 'reservation not found' USING ERRCODE = 'RB404';
     END IF;
 
     PERFORM util.check_staff(p_staff_id, v_restaurant_id, ARRAY['receptionist', 'waiter']);
 
     IF v_status <> 'seated' THEN
-        RAISE EXCEPTION 'reservation % is % and cannot be completed', p_reservation_id, v_status;
+        RAISE EXCEPTION 'reservation % is % and cannot be completed', p_reservation_id, v_status USING ERRCODE = 'RB409';
     END IF;
 
     UPDATE reservation

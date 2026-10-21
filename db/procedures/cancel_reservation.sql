@@ -14,19 +14,21 @@ BEGIN
     FOR UPDATE;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'reservation % does not exist', p_reservation_id;
+        RAISE EXCEPTION 'reservation not found' USING ERRCODE = 'RB404';
     END IF;
 
     IF v_owner <> p_user_id THEN
-        RAISE EXCEPTION 'reservation % does not belong to user %', p_reservation_id, p_user_id;
+        -- Same message and code as "doesn't exist", so nobody can probe
+        -- which reservation ids belong to other people.
+        RAISE EXCEPTION 'reservation not found' USING ERRCODE = 'RB404';
     END IF;
 
     IF v_status <> 'booked' THEN
-        RAISE EXCEPTION 'reservation % is % and cannot be cancelled', p_reservation_id, v_status;
+        RAISE EXCEPTION 'reservation % is % and cannot be cancelled', p_reservation_id, v_status USING ERRCODE = 'RB409';
     END IF;
 
     IF NOT customer.can_cancel(p_reservation_id, p_user_id) THEN
-        RAISE EXCEPTION 'reservation % starts in less than 15 minutes and cannot be cancelled', p_reservation_id;
+        RAISE EXCEPTION 'reservation % starts in less than 15 minutes and cannot be cancelled', p_reservation_id USING ERRCODE = 'RB409';
     END IF;
 
     UPDATE reservation

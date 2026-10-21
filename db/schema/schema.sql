@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS revoked_token    CASCADE;
 DROP TABLE IF EXISTS reservation      CASCADE;
 DROP TABLE IF EXISTS restaurant_staff CASCADE;
 DROP TABLE IF EXISTS app_user         CASCADE;
@@ -30,7 +31,14 @@ CREATE TABLE app_user (
     phone             text,
     password_hash     text        NOT NULL,
     email_verified_at timestamptz,
-    created_at        timestamptz NOT NULL DEFAULT now()
+    verify_token_hash text        UNIQUE,
+    verify_token_expires_at timestamptz,
+    created_at        timestamptz NOT NULL DEFAULT now(),
+
+    -- A token and its expiry are always set (or cleared) together.
+    CONSTRAINT verify_token_pair CHECK (
+        (verify_token_hash IS NULL) = (verify_token_expires_at IS NULL)
+    )
 );
 
 CREATE TABLE restaurant_staff (
@@ -75,4 +83,11 @@ CREATE TABLE reservation (
         table_id WITH =,
         tsrange(lower(period), upper(period) + interval '30 minutes') WITH &&
     ) WHERE (status IN ('booked', 'seated'))
+);
+
+-- Tokens logged out before they expired. jti is the token's random id.
+-- Rows only matter until expires_at; after that the token is dead anyway.
+CREATE TABLE revoked_token (
+    jti        text        PRIMARY KEY,
+    expires_at timestamptz NOT NULL
 );

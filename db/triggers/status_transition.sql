@@ -14,7 +14,7 @@ BEGIN
         ('seated', 'completed')
     ) THEN
         RAISE EXCEPTION 'reservation % cannot go from % to %',
-            OLD.reservation_id, OLD.status, NEW.status;
+            OLD.reservation_id, OLD.status, NEW.status USING ERRCODE = 'RB409';
     END IF;
 
     RETURN NEW;
