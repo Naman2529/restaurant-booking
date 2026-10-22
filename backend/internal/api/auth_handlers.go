@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 
 	"github.com/Naman2529/restaurant-booking/backend/internal/auth"
@@ -126,4 +127,127 @@ func (a *API) resendVerification(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{
 		"message": "if that email is registered and not verified yet, a new link has been sent",
 	})
+}
+
+type loginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+// errBadLogin is the one answer for unknown email and wrong password alike,
+// so a login attempt can't tell which emails are registered.
+var errBadLogin = echo.NewHTTPError(http.StatusUnauthorized, "wrong email or password")
+
+// POST /auth/customer/login
+// The token goes in the cookie (browsers) and in the body (curl / tests,
+// sent back as "Authorization: Bearer ...").
+func (a *API) customerLogin(c echo.Context) error {
+	var req loginRequest
+	if err := c.Bind(&req); err != nil {
+		return err
+	}
+
+	var (
+		userID   int64
+		fullName string
+		verified bool
+		hash     string
+	)
+	err := a.Pool.QueryRow(c.Request().Context(),
+		"SELECT user_id, full_name, email_verified, password_hash FROM customer.login_info($1)",
+		strings.TrimSpace(req.Email),
+	).Scan(&userID, &fullName, &verified, &hash)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+
+	// No row → hash stays "" and CheckPassword still does a full bcrypt
+	// compare, so unknown emails take as long as wrong passwords.
+	if !auth.CheckPassword(hash, req.Password) {
+		return errBadLogin
+	}
+
+	token, err := a.Tokens.IssueCustomer(userID)
+	if err != nil {
+		return err
+	}
+	a.Tokens.SetCookie(c, auth.KindCustomer, token)
+
+	return c.JSON(http.StatusOK, map[string]any{
+		"token": token,
+		"user": map[string]any{
+			"user_id":        userID,
+			"full_name":      fullName,
+			"email_verified": verified,
+		},
+	})
+}
+
+// POST /auth/staff/login
+// restaurant_id and role go into the token; staff routes read them from
+// there, never from the request.
+func (a *API) staffLogin(c echo.Context) error {
+	var req loginRequest
+	if err := c.Bind(&req); err != nil {
+		return err
+	}
+
+	var (
+		staffID      int64
+		restaurantID int64
+		fullName     string
+		role         string
+		hash         string
+	)
+	err := a.Pool.QueryRow(c.Request().Context(),
+		"SELECT staff_id, restaurant_id, full_name, role, password_hash FROM staff.login_info($1)",
+		strings.TrimSpace(req.Email),
+	).Scan(&staffID, &restaurantID, &fullName, &role, &hash)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+
+	if !auth.CheckPassword(hash, req.Password) {
+		return errBadLogin
+	}
+
+	token, err := a.Tokens.IssueStaff(staffID, restaurantID, role)
+	if err != nil {
+		return err
+	}
+	a.Tokens.SetCookie(c, auth.KindStaff, token)
+
+	return c.JSON(http.StatusOK, map[string]any{
+		"token": token,
+		"staff": map[string]any{
+			"staff_id":      staffID,
+			"restaurant_id": restaurantID,
+			"full_name":     fullName,
+			"role":          role,
+		},
+	})
+}
+
+// logout returns the handler for POST /auth/<kind>/logout (behind Require).
+// Revoking blocks this token everywhere, not just in this browser.
+func (a *API) logout(kind string) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if err := a.Tokens.Revoke(c.Request().Context(), auth.From(c)); err != nil {
+			return err
+		}
+		a.Tokens.ClearCookie(c, kind)
+		return c.JSON(http.StatusOK, map[string]string{"message": "logged out"})
+	}
+}
+
+// GET /auth/<kind>/me (behind Require)
+// The cookie is HttpOnly, so the front end asks here who is logged in.
+func me(c echo.Context) error {
+	cl := auth.From(c)
+	out := map[string]any{"kind": cl.Kind, "id": cl.SubjectID()}
+	if cl.Kind == auth.KindStaff {
+		out["restaurant_id"] = cl.RestaurantID
+		out["role"] = cl.Role
+	}
+	return c.JSON(http.StatusOK, out)
 }
