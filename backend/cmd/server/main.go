@@ -12,8 +12,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
+	"github.com/Naman2529/restaurant-booking/backend/internal/api"
+	"github.com/Naman2529/restaurant-booking/backend/internal/auth"
 	"github.com/Naman2529/restaurant-booking/backend/internal/config"
 	"github.com/Naman2529/restaurant-booking/backend/internal/db"
+	"github.com/Naman2529/restaurant-booking/backend/internal/mail"
 )
 
 func main() {
@@ -34,6 +37,7 @@ func main() {
 
 	e := echo.New()
 	e.HideBanner = true
+	e.HTTPErrorHandler = api.ErrorHandler
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
@@ -50,6 +54,14 @@ func main() {
 			"db_user": user,
 		})
 	})
+
+	a := &api.API{
+		Pool:    pool,
+		Tokens:  auth.NewTokens(cfg.JWTSecret, cfg.CookieSecure, auth.PGRevocations{Pool: pool}),
+		Mail:    mail.New(cfg.SMTPUser, cfg.SMTPPassword),
+		BaseURL: cfg.BaseURL,
+	}
+	a.Register(e)
 
 	go func() {
 		if err := e.Start(":" + cfg.HTTPPort); err != nil && !errors.Is(err, http.ErrServerClosed) {
