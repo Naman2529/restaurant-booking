@@ -1,6 +1,6 @@
-# Personal planning notes
-LATER.md
-PROJECT_PLAN.md
+# Personal notes: every Markdown file except the README
+*.md
+!README.md
 
 # Secrets
 .env
