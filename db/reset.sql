@@ -19,6 +19,8 @@
 \ir procedures/verify_email.sql
 \ir procedures/resend_verification.sql
 \ir functions/customer_login.sql
+\ir functions/restaurants.sql
+\ir functions/my_reservations.sql
 
 -- staff
 \ir functions/seat_map.sql
@@ -29,6 +31,7 @@
 \ir procedures/reassign_table.sql
 \ir cursors/no_show_sweep.sql
 \ir functions/staff_login.sql
+\ir functions/day_reservations.sql
 
 -- auth
 \ir procedures/revoke_token.sql

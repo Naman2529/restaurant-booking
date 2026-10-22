@@ -1,7 +1,7 @@
 CREATE OR REPLACE PROCEDURE staff.reassign_table(
     p_reservation_id bigint,
     p_staff_id       bigint,
-    p_new_table_id   bigint
+    p_new_table_number int
 )
 LANGUAGE plpgsql
 AS $$
@@ -10,7 +10,7 @@ DECLARE
     v_party_size     int;
     v_old_table_id   bigint;
     v_restaurant_id  bigint;
-    v_new_restaurant bigint;
+    v_new_table_id   bigint;
     v_new_capacity   int;
     v_new_number     int;
 BEGIN
@@ -31,21 +31,20 @@ BEGIN
         RAISE EXCEPTION 'reservation % is % and cannot be reassigned', p_reservation_id, v_status USING ERRCODE = 'RB409';
     END IF;
 
-    SELECT restaurant_id, capacity, table_number
-    INTO v_new_restaurant, v_new_capacity, v_new_number
+    -- Staff only ever see table numbers. Looking the number up inside the
+    -- reservation's own restaurant means another restaurant's table can't
+    -- even be named.
+    SELECT table_id, capacity, table_number
+    INTO v_new_table_id, v_new_capacity, v_new_number
     FROM dining_table
-    WHERE table_id = p_new_table_id;
+    WHERE restaurant_id = v_restaurant_id
+      AND table_number = p_new_table_number;
 
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'table not found' USING ERRCODE = 'RB404';
+        RAISE EXCEPTION 'table % not found', p_new_table_number USING ERRCODE = 'RB404';
     END IF;
 
-    IF v_new_restaurant <> v_restaurant_id THEN
-        -- Another restaurant's table looks exactly like a missing one.
-        RAISE EXCEPTION 'table not found' USING ERRCODE = 'RB404';
-    END IF;
-
-    IF p_new_table_id = v_old_table_id THEN
+    IF v_new_table_id = v_old_table_id THEN
         RAISE EXCEPTION 'reservation % is already on table %', p_reservation_id, v_new_number USING ERRCODE = 'RB422';
     END IF;
 
@@ -56,7 +55,7 @@ BEGIN
 
     BEGIN
         UPDATE reservation
-        SET table_id = p_new_table_id
+        SET table_id = v_new_table_id
         WHERE reservation_id = p_reservation_id;
     EXCEPTION
         WHEN exclusion_violation THEN
