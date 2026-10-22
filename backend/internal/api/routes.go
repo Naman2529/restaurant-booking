@@ -42,4 +42,16 @@ func (a *API) Register(e *echo.Echo) {
 	r.POST("", a.book)
 	r.GET("", a.myReservations)
 	r.POST("/:id/cancel", a.cancel)
+
+	// Staff panel. Restaurant and staff id come from the token; the DB
+	// checks the role (seat / reassign = receptionist only).
+	s := e.Group("/staff", staff)
+	s.GET("/seat-map", a.seatMap)
+	s.GET("/reservations", a.dayReservations)
+	s.POST("/reservations/:id/seat", a.staffAction("seat_reservation", "party seated"))
+	s.POST("/reservations/:id/complete", a.staffAction("complete_reservation", "table freed"))
+	s.POST("/reservations/:id/no-show", a.staffAction("mark_no_show", "marked as no-show"))
+	s.POST("/reservations/:id/extend", a.extend)
+	s.POST("/reservations/:id/reassign", a.reassign)
+	s.POST("/no-show-sweep", a.noShowSweep)
 }
