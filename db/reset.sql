@@ -8,12 +8,18 @@
 \ir functions/ist_now.sql
 \ir functions/check_staff.sql
 \ir functions/allowed_capacities.sql
+\ir functions/table_free.sql
+\ir functions/check_booking.sql
 
 -- customer
 \ir functions/available_tables.sql
 \ir functions/available_slots.sql
 \ir functions/can_cancel.sql
 \ir procedures/book_table.sql
+\ir procedures/book_specific_table.sql
+\ir functions/table_availability.sql
+\ir functions/floor_plan.sql
+\ir functions/customer_profile.sql
 \ir procedures/cancel_reservation.sql
 \ir procedures/sign_up.sql
 \ir procedures/verify_email.sql
@@ -31,6 +37,7 @@
 \ir procedures/reassign_table.sql
 \ir cursors/no_show_sweep.sql
 \ir functions/staff_login.sql
+\ir functions/staff_profile.sql
 \ir functions/day_reservations.sql
 
 -- auth

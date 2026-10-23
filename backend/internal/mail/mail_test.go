@@ -7,7 +7,7 @@ import (
 
 func TestVerificationMessage(t *testing.T) {
 	link := VerifyLink("http://localhost:8080/", "abc123")
-	if link != "http://localhost:8080/auth/verify?token=abc123" {
+	if link != "http://localhost:8080/verify-email?token=abc123" {
 		t.Fatalf("wrong link: %s", link)
 	}
 

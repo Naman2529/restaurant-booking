@@ -1,0 +1,328 @@
+.floor-plan {
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.plan-floor {
+  fill: #fffaf0;
+  stroke: #dcc5a2;
+  stroke-width: 6;
+}
+
+/* ---------- Features ---------- */
+.ft-label {
+  fill: var(--ink-soft);
+  font-size: 26px;
+  font-weight: 700;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.ft-label-small {
+  font-size: 21px;
+}
+
+.ft-pond {
+  fill: #cfe7ec;
+  stroke: #94c6cf;
+  stroke-width: 3;
+}
+.ft-ripple {
+  fill: none;
+  stroke: #a9d3da;
+  stroke-width: 2;
+}
+.ft-pad {
+  fill: #8db66a;
+}
+.feature-pond .ft-label {
+  fill: #2e6470;
+}
+
+.ft-bar {
+  fill: #a8744b;
+}
+.ft-bar-top {
+  fill: #c69466;
+}
+.ft-stool {
+  fill: #e9d6b8;
+  stroke: #a8744b;
+  stroke-width: 2;
+}
+.feature-bar .ft-label {
+  fill: #fff6e6;
+}
+
+.ft-entrance {
+  fill: var(--sun-soft);
+  stroke: var(--sun);
+  stroke-width: 2.5;
+}
+.ft-arrow {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ft-shelf {
+  fill: #e7d3b2;
+}
+
+.ft-base {
+  stroke-width: 2.5;
+}
+.ft-terrace {
+  fill: #f1e2c4;
+  stroke: #e2cfa8;
+}
+.ft-deck {
+  fill: #e3c7a0;
+  stroke: #cfae80;
+}
+.ft-kitchen {
+  fill: #f6f0e4;
+  stroke: #ddcfb6;
+}
+.ft-garden {
+  fill: var(--olive-soft);
+  stroke: #bcd6a1;
+}
+.ft-fireplace {
+  fill: #c9765b;
+  stroke: #a85b43;
+}
+.ft-window {
+  fill: #dcebf4;
+  stroke: #a9c7da;
+}
+.ft-counter {
+  fill: #f3ece0;
+  stroke: #dccbb0;
+}
+.feature-fireplace .ft-label {
+  fill: #fff3ea;
+  font-size: 21px;
+}
+.feature-garden .ft-label {
+  fill: var(--olive-deep);
+}
+.feature-window .ft-label {
+  fill: #2f5d8a;
+}
+
+.ft-flame {
+  fill: var(--sun);
+  stroke: #e2862c;
+  stroke-width: 2;
+}
+
+.pt-cobble {
+  fill: #e6d1ab;
+}
+.pt-line {
+  fill: none;
+  stroke: #cfae80;
+  stroke-width: 1.2;
+}
+.pt-tile {
+  fill: #ece2cf;
+}
+.pt-leaf {
+  fill: #a7c98a;
+}
+.pt-flower {
+  fill: var(--rose);
+}
+.pt-mortar {
+  fill: none;
+  stroke: #e7a58c;
+  stroke-width: 1.4;
+}
+.pt-mullion {
+  stroke: #b9d3e3;
+  stroke-width: 3;
+}
+.pt-vein {
+  fill: none;
+  stroke: #e2d4bb;
+  stroke-width: 1.5;
+}
+.pt-hatch {
+  stroke: rgb(255 255 255 / 0.55);
+  stroke-width: 3;
+}
+
+/* ---------- Tables ---------- */
+.tbl {
+  --top: #b9ad9c;
+  --chair: #d9cfc0;
+  --num: var(--ink);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 180ms var(--ease-out), opacity 200ms ease;
+  outline: none;
+}
+
+.tbl .tbl-top,
+.tbl .hall-room {
+  fill: var(--top);
+  transition: fill 200ms ease;
+}
+
+.tbl .chair {
+  fill: var(--chair);
+  transition: fill 200ms ease;
+}
+
+.tbl .tbl-hatch,
+.tbl .hall-hatch {
+  opacity: 0;
+}
+
+.tbl .hall-table {
+  fill: rgb(255 255 255 / 0.55);
+}
+
+.tbl-num {
+  fill: var(--num);
+  font-family: var(--font-body);
+  font-weight: 850;
+  font-size: 17px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.hall-label {
+  fill: var(--num);
+  font-size: 22px;
+  font-weight: 700;
+  text-anchor: middle;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.tbl .hall-room ~ .tbl-num {
+  font-size: 22px;
+}
+
+/* Customer tones */
+.tone-free {
+  --top: var(--olive);
+  --chair: #a9c98b;
+  --num: #fff;
+}
+.tone-unfit {
+  --top: #e9dfcf;
+  --chair: #efe7da;
+  --num: var(--ink-faint);
+}
+.tone-unfit .tbl-top,
+.tone-unfit .hall-room {
+  stroke: #cdbda4;
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+.tone-taken {
+  --top: var(--taken);
+  --chair: #ddd2c3;
+  --num: #6d5c4b;
+}
+.tone-taken .tbl-hatch,
+.tone-taken .hall-hatch {
+  opacity: 1;
+}
+
+.tbl.is-picked {
+  --top: var(--terracotta);
+  --chair: #eaa48f;
+  --num: #fff;
+  transform: scale(1.08);
+}
+.tbl.is-picked .tbl-top,
+.tbl.is-picked .hall-room {
+  filter: drop-shadow(0 4px 6px rgb(168 67 46 / 0.35));
+}
+
+/* Staff tones (seat-map colours from the database) */
+.tone-green {
+  --top: var(--olive);
+  --chair: #a9c98b;
+  --num: #fff;
+}
+.tone-transparent {
+  --top: #fffaf0;
+  --chair: #dcebc9;
+  --num: var(--olive-deep);
+}
+.tone-transparent .tbl-top,
+.tone-transparent .hall-room {
+  stroke: var(--olive);
+  stroke-width: 3;
+  stroke-dasharray: 7 5;
+}
+.tone-gray {
+  --top: #9b948c;
+  --chair: #c9c3bb;
+  --num: #fff;
+}
+.tone-red {
+  --top: #c0392b;
+  --chair: #e79a90;
+  --num: #fff;
+}
+.tone-orange {
+  --top: #e8892c;
+  --chair: #f4c48f;
+  --num: #fff;
+}
+
+.sel-ring {
+  fill: none;
+  stroke: var(--shutter);
+  stroke-width: 4;
+  stroke-dasharray: 10 6;
+}
+
+.tbl.is-selectable {
+  cursor: pointer;
+}
+
+.tbl.is-selectable:active {
+  transform: scale(0.96);
+}
+
+.tbl.is-picked.is-selectable:active {
+  transform: scale(1.04);
+}
+
+.tbl:focus-visible .tbl-top,
+.tbl:focus-visible .hall-room {
+  stroke: var(--shutter);
+  stroke-width: 4;
+  stroke-dasharray: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tbl.is-selectable:hover:not(.is-picked) {
+    transform: scale(1.05);
+  }
+}
+
+.tbl.is-highlight .tbl-top,
+.tbl.is-highlight .hall-room {
+  stroke: var(--shutter);
+  stroke-width: 3;
+  animation: breathe 1.6s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  50% {
+    stroke-opacity: 0.25;
+  }
+}

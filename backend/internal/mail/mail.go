@@ -33,9 +33,12 @@ func New(user, password string) Sender {
 	return Gmail{User: user, Password: password}
 }
 
-// VerifyLink builds the link that goes in the email.
+// VerifyLink builds the link that goes in the email. It opens the front
+// end's /verify-email page, which calls GET /auth/verify from JavaScript.
+// Email scanners that pre-open links don't run JavaScript, so they can't use
+// up the single-use token. baseURL is the front end's address.
 func VerifyLink(baseURL, token string) string {
-	return strings.TrimRight(baseURL, "/") + "/auth/verify?token=" + url.QueryEscape(token)
+	return strings.TrimRight(baseURL, "/") + "/verify-email?token=" + url.QueryEscape(token)
 }
 
 // LogSender prints the link instead of emailing it.

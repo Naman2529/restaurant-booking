@@ -27,20 +27,23 @@ func (a *API) Register(e *echo.Echo) {
 	customer := a.Tokens.Require(auth.KindCustomer)
 	g.POST("/customer/login", a.customerLogin)
 	g.POST("/customer/logout", a.logout(auth.KindCustomer), customer)
-	g.GET("/customer/me", me, customer)
+	g.GET("/customer/me", a.me, customer)
 
 	staff := a.Tokens.Require(auth.KindStaff)
 	g.POST("/staff/login", a.staffLogin)
 	g.POST("/staff/logout", a.logout(auth.KindStaff), staff)
-	g.GET("/staff/me", me, staff)
+	g.GET("/staff/me", a.me, staff)
 
 	// Browsing is public; booking needs a customer login.
 	e.GET("/restaurants", a.listRestaurants)
 	e.GET("/restaurants/:id/slots", a.listSlots)
+	e.GET("/restaurants/:id/floor-plan", a.floorPlan)
+	e.GET("/restaurants/:id/tables", a.listTableAvailability)
 
 	r := e.Group("/reservations", customer)
 	r.POST("", a.book)
 	r.GET("", a.myReservations)
+	r.GET("/:id", a.getReservation)
 	r.POST("/:id/cancel", a.cancel)
 
 	// Staff panel. Restaurant and staff id come from the token; the DB

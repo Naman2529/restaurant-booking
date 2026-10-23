@@ -240,14 +240,60 @@ func (a *API) logout(kind string) echo.HandlerFunc {
 	}
 }
 
+type customerProfile struct {
+	UserID        int64   `json:"id"             db:"user_id"`
+	FullName      string  `json:"full_name"      db:"full_name"`
+	Email         string  `json:"email"          db:"email"`
+	Phone         *string `json:"phone"          db:"phone"`
+	EmailVerified bool    `json:"email_verified" db:"email_verified"`
+}
+
+type staffProfile struct {
+	StaffID        int64  `json:"id"              db:"staff_id"`
+	FullName       string `json:"full_name"       db:"full_name"`
+	Email          string `json:"email"           db:"email"`
+	Role           string `json:"role"            db:"role"`
+	RestaurantID   int64  `json:"restaurant_id"   db:"restaurant_id"`
+	RestaurantName string `json:"restaurant_name" db:"restaurant_name"`
+}
+
 // GET /auth/<kind>/me (behind Require)
-// The cookie is HttpOnly, so the front end asks here who is logged in.
-func me(c echo.Context) error {
+// The cookie is HttpOnly, so the front end asks here who is logged in. The
+// name, verified flag and restaurant come from the database, so they're
+// current (e.g. right after the verify link is clicked).
+func (a *API) me(c echo.Context) error {
 	cl := auth.From(c)
-	out := map[string]any{"kind": cl.Kind, "id": cl.SubjectID()}
+	ctx := c.Request().Context()
+
+	var out any
+	var err error
 	if cl.Kind == auth.KindStaff {
-		out["restaurant_id"] = cl.RestaurantID
-		out["role"] = cl.Role
+		rows, _ := a.Pool.Query(ctx,
+			"SELECT staff_id, full_name, email::text AS email, role, restaurant_id, restaurant_name FROM staff.profile($1)",
+			cl.SubjectID())
+		var p staffProfile
+		p, err = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[staffProfile])
+		out = struct {
+			Kind string `json:"kind"`
+			staffProfile
+		}{cl.Kind, p}
+	} else {
+		rows, _ := a.Pool.Query(ctx,
+			"SELECT user_id, full_name, email::text AS email, phone, email_verified FROM customer.profile($1)",
+			cl.SubjectID())
+		var p customerProfile
+		p, err = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[customerProfile])
+		out = struct {
+			Kind string `json:"kind"`
+			customerProfile
+		}{cl.Kind, p}
+	}
+	// A valid token for an account that no longer exists.
+	if errors.Is(err, pgx.ErrNoRows) {
+		return echo.NewHTTPError(http.StatusUnauthorized, "account not found")
+	}
+	if err != nil {
+		return err
 	}
 	return c.JSON(http.StatusOK, out)
 }

@@ -1,0 +1,133 @@
+/* Striped café awning with a scalloped edge: the stripes and the scallops
+   share an 80px period, so each scallop sits under its own stripe. */
+.awning {
+  position: relative;
+  height: 26px;
+  background: repeating-linear-gradient(90deg, var(--terracotta) 0 40px, #fffdf6 40px 80px);
+  filter: drop-shadow(0 6px 6px rgb(74 45 20 / 0.12));
+  z-index: 2;
+}
+
+.awning::after {
+  content: '';
+  position: absolute;
+  inset: 100% 0 auto;
+  height: 18px;
+  background:
+    radial-gradient(circle at 20px 0, var(--terracotta) 19.5px, transparent 20px) 0 0 / 80px 20px repeat-x,
+    radial-gradient(circle at 20px 0, #fffdf6 19.5px, transparent 20px) 40px 0 / 80px 20px repeat-x;
+}
+
+.site-header {
+  position: relative;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 30px 12px;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-variation-settings: 'SOFT' 100, 'WONK' 1;
+  font-weight: 640;
+  font-size: clamp(1.7rem, 2.2vw + 1rem, 2.3rem);
+  color: var(--terracotta);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 2vw, 22px);
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-soft);
+  font-weight: 700;
+  text-decoration: none;
+  padding: 6px 2px;
+  border-bottom: 2px solid transparent;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.nav-link.active {
+  color: var(--ink);
+  border-bottom-color: var(--sun);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-link:hover {
+    color: var(--ink);
+  }
+}
+
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 4px;
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+
+.user-initial {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--sun);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 700;
+}
+
+.user-name {
+  font-weight: 700;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: transform var(--press) var(--ease-out), background-color 160ms ease;
+}
+
+.icon-btn:active {
+  transform: scale(0.94);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .icon-btn:hover {
+    background: var(--cream-deep);
+    color: var(--ink);
+  }
+}
+
+@media (max-width: 640px) {
+  .business-link,
+  .user-name {
+    display: none;
+  }
+  .nav-link {
+    font-size: 0.95rem;
+  }
+}

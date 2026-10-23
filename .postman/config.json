@@ -1,0 +1,15 @@
+{
+  "workspace": {
+    "id": "a6d32cdf-5bdd-4e7f-8703-29d62ad346c5"
+  },
+  "entities": {
+    "environments": [],
+    "flows": [],
+    "globals": [],
+    "mocks": [],
+    "specs": [],
+    "collections": [
+      "..\\docs\\postman\\restaurant-booking.postman_collection.json"
+    ]
+  }
+}

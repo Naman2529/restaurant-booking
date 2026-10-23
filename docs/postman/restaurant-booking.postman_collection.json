@@ -1,96 +1,16 @@
 {
   "info": {
+    "_postman_id": "97027f91-b5c3-4fea-9a37-519de850077c",
     "name": "Restaurant Booking API",
     "description": "Local API (Go + Postgres). Start it with `go run ./cmd/server` from backend/. Seed passwords are password123.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          "// tomorrow's date in IST, e.g. 2026-10-24",
-          "const ist = new Date(Date.now() + 5.5 * 3600 * 1000);",
-          "ist.setUTCDate(ist.getUTCDate() + 1);",
-          "pm.collectionVariables.set('tomorrow', ist.toISOString().slice(0, 10));"
-        ]
-      }
-    }
-  ],
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080"
-    },
-    {
-      "key": "signupEmail",
-      "value": ""
-    },
-    {
-      "key": "verifyToken",
-      "value": ""
-    },
-    {
-      "key": "tomorrow",
-      "value": ""
-    },
-    {
-      "key": "reservationId",
-      "value": ""
-    },
-    {
-      "key": "customerToken",
-      "value": ""
-    },
-    {
-      "key": "priyaToken",
-      "value": ""
-    },
-    {
-      "key": "meeraToken",
-      "value": ""
-    },
-    {
-      "key": "receptionToken",
-      "value": ""
-    },
-    {
-      "key": "waiterToken",
-      "value": ""
-    },
-    {
-      "key": "coastalToken",
-      "value": ""
-    }
-  ],
   "item": [
     {
       "name": "1. Auth",
-      "description": "Run the login requests first: they save the tokens every other request uses.",
       "item": [
         {
           "name": "Health",
-          "protocolProfileBehavior": {
-            "disableCookies": true
-          },
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/health",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "health"
-              ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            }
-          },
           "event": [
             {
               "listen": "test",
@@ -101,45 +21,31 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Sign up (set signupEmail first)",
+          ],
+          "id": "45502416-e055-4605-8a91-d82532509028",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
             "url": {
-              "raw": "{{baseUrl}}/auth/signup",
+              "raw": "{{baseUrl}}/health",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "auth",
-                "signup"
+                "health"
               ]
-            },
-            "description": "Set the signupEmail collection variable to an address you can open. The verify link is emailed.",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{signupEmail}}\",\n  \"full_name\": \"Test User\",\n  \"phone\": \"\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
+          "response": []
+        },
+        {
+          "name": "Sign up (set signupEmail first)",
           "event": [
             {
               "listen": "test",
@@ -150,14 +56,15 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Sign up again (duplicate, 409)",
+          ],
+          "id": "6547b61b-b87f-4e27-83ae-aa526677ade0",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -165,6 +72,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{signupEmail}}\",\n  \"full_name\": \"Test User\",\n  \"phone\": \"\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/auth/signup",
               "host": [
@@ -175,20 +91,12 @@
                 "signup"
               ]
             },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{signupEmail}}\",\n  \"full_name\": \"Test User\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
+            "description": "Set the signupEmail collection variable to an address you can open. The verify link is emailed."
           },
+          "response": []
+        },
+        {
+          "name": "Sign up again (duplicate, 409)",
           "event": [
             {
               "listen": "test",
@@ -199,14 +107,15 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Sign up short password (422)",
+          ],
+          "id": "6ea97d7c-c5f0-4449-b999-78c69e92b954",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -214,6 +123,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{signupEmail}}\",\n  \"full_name\": \"Test User\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/auth/signup",
               "host": [
@@ -223,21 +141,12 @@
                 "auth",
                 "signup"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"short@example.com\",\n  \"full_name\": \"X\",\n  \"password\": \"short\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
+          "response": []
+        },
+        {
+          "name": "Sign up short password (422)",
           "event": [
             {
               "listen": "test",
@@ -248,14 +157,65 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Verify email (paste token)",
+          ],
+          "id": "2ffc6ef2-938b-4f0f-aeae-9c6b1b0a92a0",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"short@example.com\",\n  \"full_name\": \"X\",\n  \"password\": \"short\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "signup"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify email (paste token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "id": "b9eaaac9-0b70-4100-b721-9e3c5dbd16d9",
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -274,11 +234,12 @@
                 }
               ]
             },
-            "description": "Copy the token= part of the emailed link into the verifyToken variable. Sending it twice gives 404.",
-            "auth": {
-              "type": "noauth"
-            }
+            "description": "Copy the token= part of the emailed link into the verifyToken variable. Sending it twice gives 404."
           },
+          "response": []
+        },
+        {
+          "name": "Resend link",
           "event": [
             {
               "listen": "test",
@@ -289,14 +250,15 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Resend link",
+          ],
+          "id": "ba41957a-2fb4-4842-9044-9082497ca3e9",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -304,6 +266,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{signupEmail}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/auth/resend",
               "host": [
@@ -313,71 +284,12 @@
                 "auth",
                 "resend"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{signupEmail}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
           "name": "Customer login: Aarav",
-          "protocolProfileBehavior": {
-            "disableCookies": true
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/auth/customer/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "customer",
-                "login"
-              ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"aarav@example.com\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
           "event": [
             {
               "listen": "test",
@@ -389,14 +301,15 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Customer login: Priya",
+          ],
+          "id": "bdfc06ed-e382-4990-90d8-85627bd77b5a",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -404,6 +317,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"aarav@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/auth/customer/login",
               "host": [
@@ -414,21 +336,12 @@
                 "customer",
                 "login"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"priya@example.com\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
+          "response": []
+        },
+        {
+          "name": "Customer login: Priya",
           "event": [
             {
               "listen": "test",
@@ -440,14 +353,15 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Customer login: Meera (unverified)",
+          ],
+          "id": "3fce3476-13f5-4171-bd9a-f9f2b51648a5",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -455,6 +369,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"priya@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/auth/customer/login",
               "host": [
@@ -465,21 +388,12 @@
                 "customer",
                 "login"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"meera@example.com\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
+          "response": []
+        },
+        {
+          "name": "Customer login: Meera (unverified)",
           "event": [
             {
               "listen": "test",
@@ -491,14 +405,15 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Customer login: wrong password (401)",
+          ],
+          "id": "2b51bd59-ddb0-4ec2-9be6-e83bd405fd49",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -506,6 +421,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"meera@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/auth/customer/login",
               "host": [
@@ -516,21 +440,12 @@
                 "customer",
                 "login"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"aarav@example.com\",\n  \"password\": \"wrongpass1\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
+          "response": []
+        },
+        {
+          "name": "Customer login: wrong password (401)",
           "event": [
             {
               "listen": "test",
@@ -541,14 +456,73 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Customer me",
+          ],
+          "id": "98147b97-50e3-400b-aad3-11d33d134613",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"aarav@example.com\",\n  \"password\": \"wrongpass1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/customer/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "customer",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Customer me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "id": "edb04cbb-d4a6-44a4-93fc-f9bff0e9942e",
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -561,69 +535,12 @@
                 "customer",
                 "me"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{customerToken}}",
-                  "type": "string"
-                }
-              ]
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
           "name": "Staff login: Spice receptionist",
-          "protocolProfileBehavior": {
-            "disableCookies": true
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/auth/staff/login",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "staff",
-                "login"
-              ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"reception@spiceroute.example.com\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
           "event": [
             {
               "listen": "test",
@@ -635,14 +552,15 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Staff login: Spice waiter",
+          ],
+          "id": "7d24b899-d316-4c4f-b05b-db52aecdc727",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -650,6 +568,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"reception@spiceroute.example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/auth/staff/login",
               "host": [
@@ -660,21 +587,12 @@
                 "staff",
                 "login"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"waiter@spiceroute.example.com\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
+          "response": []
+        },
+        {
+          "name": "Staff login: Spice waiter",
           "event": [
             {
               "listen": "test",
@@ -686,14 +604,15 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Staff login: Coastal receptionist",
+          ],
+          "id": "66b5c64a-e73c-41c5-9009-060829187458",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
@@ -701,6 +620,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"waiter@spiceroute.example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/auth/staff/login",
               "host": [
@@ -711,21 +639,12 @@
                 "staff",
                 "login"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"reception@coastalkitchen.example.com\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
+          "response": []
+        },
+        {
+          "name": "Staff login: Coastal receptionist",
           "event": [
             {
               "listen": "test",
@@ -737,39 +656,47 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Staff me",
+          ],
+          "id": "e95798d9-dadf-46fa-b18e-bb2f14de6584",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
-            "method": "GET",
-            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"reception@coastalkitchen.example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
-              "raw": "{{baseUrl}}/auth/staff/me",
+              "raw": "{{baseUrl}}/auth/staff/login",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "auth",
                 "staff",
-                "me"
-              ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{receptionToken}}",
-                  "type": "string"
-                }
+                "login"
               ]
             }
           },
+          "response": []
+        },
+        {
+          "name": "Staff me",
           "event": [
             {
               "listen": "test",
@@ -780,14 +707,22 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Customer token on staff route (403)",
+          ],
+          "id": "4a6ad76e-507a-4ead-81b4-f45381922085",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{receptionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -800,19 +735,12 @@
                 "staff",
                 "me"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{customerToken}}",
-                  "type": "string"
-                }
-              ]
             }
           },
+          "response": []
+        },
+        {
+          "name": "Customer token on staff route (403)",
           "event": [
             {
               "listen": "test",
@@ -823,35 +751,47 @@
                 ]
               }
             }
-          ]
+          ],
+          "id": "ca5bdf6f-ad12-42ef-af78-be18a112137b",
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/staff/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "staff",
+                "me"
+              ]
+            }
+          },
+          "response": []
         }
-      ]
+      ],
+      "id": "c1e097b4-09c6-49da-9099-56e6820a6651",
+      "description": "Run the login requests first: they save the tokens every other request uses."
     },
     {
       "name": "2. Customer",
       "item": [
         {
           "name": "Restaurants",
-          "protocolProfileBehavior": {
-            "disableCookies": true
-          },
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/restaurants",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "restaurants"
-              ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            }
-          },
           "event": [
             {
               "listen": "test",
@@ -862,14 +802,50 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Slots tomorrow, party 4",
+          ],
+          "id": "62d9da57-126c-4332-8440-a3ec14ff56c2",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/restaurants",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "restaurants"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Slots tomorrow, party 4",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "id": "5fcc5ae8-6906-4753-aa0e-bc41d78a124c",
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -892,67 +868,12 @@
                   "value": "4"
                 }
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
           "name": "Book tomorrow 19:00 (saves reservationId)",
-          "protocolProfileBehavior": {
-            "disableCookies": true
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/reservations",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "reservations"
-              ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{customerToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"restaurant_id\": 1,\n  \"start\": \"{{tomorrow}}T19:00\",\n  \"party_size\": 4\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
           "event": [
             {
               "listen": "test",
@@ -964,14 +885,22 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Book as Meera, unverified (403)",
+          ],
+          "id": "b1e10241-d2a5-45e9-88bd-85f67e210c77",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -979,26 +908,6 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/reservations",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "reservations"
-              ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{meeraToken}}",
-                  "type": "string"
-                }
-              ]
-            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"restaurant_id\": 1,\n  \"start\": \"{{tomorrow}}T19:00\",\n  \"party_size\": 4\n}",
@@ -1007,8 +916,21 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reservations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations"
+              ]
             }
           },
+          "response": []
+        },
+        {
+          "name": "Book as Meera, unverified (403)",
           "event": [
             {
               "listen": "test",
@@ -1019,14 +941,22 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Book 19:15, not a slot (422)",
+          ],
+          "id": "593b2aab-8007-4d65-9084-c51e448ca870",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{meeraToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1034,6 +964,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurant_id\": 1,\n  \"start\": \"{{tomorrow}}T19:00\",\n  \"party_size\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/reservations",
               "host": [
@@ -1042,8 +981,28 @@
               "path": [
                 "reservations"
               ]
-            },
-            "description": "",
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Book 19:15, not a slot (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 422\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "id": "1b70b984-6378-4d10-b89f-aaaed8e4e001",
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          },
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1054,6 +1013,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"restaurant_id\": 1,\n  \"start\": \"{{tomorrow}}T19:15\",\n  \"party_size\": 4\n}",
@@ -1062,8 +1028,21 @@
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reservations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations"
+              ]
             }
           },
+          "response": []
+        },
+        {
+          "name": "Book party 25 (422)",
           "event": [
             {
               "listen": "test",
@@ -1074,31 +1053,12 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Book party 25 (422)",
+          ],
+          "id": "a11b48e2-3736-4073-97b4-1a8241b9f810",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/reservations",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "reservations"
-              ]
-            },
-            "description": "",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1109,6 +1069,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"restaurant_id\": 1,\n  \"start\": \"{{tomorrow}}T19:00\",\n  \"party_size\": 25\n}",
@@ -1117,33 +1084,7 @@
                   "language": "json"
                 }
               }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"status is 422\", () => pm.response.to.have.status(422));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Book unknown restaurant (404)",
-          "protocolProfileBehavior": {
-            "disableCookies": true
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            },
             "url": {
               "raw": "{{baseUrl}}/reservations",
               "host": [
@@ -1152,28 +1093,12 @@
               "path": [
                 "reservations"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{customerToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"restaurant_id\": 999,\n  \"start\": \"{{tomorrow}}T19:00\",\n  \"party_size\": 4\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
+          "response": []
+        },
+        {
+          "name": "Book unknown restaurant (404)",
           "event": [
             {
               "listen": "test",
@@ -1184,14 +1109,22 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Book with no login (401)",
+          ],
+          "id": "51a2e448-3da8-4c6d-865a-8610c974834d",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1199,6 +1132,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurant_id\": 999,\n  \"start\": \"{{tomorrow}}T19:00\",\n  \"party_size\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/reservations",
               "host": [
@@ -1207,21 +1149,12 @@
               "path": [
                 "reservations"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "noauth"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"restaurant_id\": 1,\n  \"start\": \"{{tomorrow}}T19:00\",\n  \"party_size\": 4\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
+          "response": []
+        },
+        {
+          "name": "Book with no login (401)",
           "event": [
             {
               "listen": "test",
@@ -1232,14 +1165,71 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "My reservations",
+          ],
+          "id": "f26496de-9fd2-4aa1-8917-1c5264533da5",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurant_id\": 1,\n  \"start\": \"{{tomorrow}}T19:00\",\n  \"party_size\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reservations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "My reservations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "id": "9f3f7c65-e4ca-437f-8000-c98979411b36",
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1250,62 +1240,12 @@
               "path": [
                 "reservations"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{customerToken}}",
-                  "type": "string"
-                }
-              ]
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
           "name": "Priya cancels Aarav's booking (404)",
-          "protocolProfileBehavior": {
-            "disableCookies": true
-          },
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/reservations/{{reservationId}}/cancel",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "reservations",
-                "{{reservationId}}",
-                "cancel"
-              ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{priyaToken}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
           "event": [
             {
               "listen": "test",
@@ -1316,14 +1256,22 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Cancel my booking",
+          ],
+          "id": "89a6eefa-c69f-4e7e-b010-25b0d82f0d21",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{priyaToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [],
             "url": {
@@ -1336,19 +1284,12 @@
                 "{{reservationId}}",
                 "cancel"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{customerToken}}",
-                  "type": "string"
-                }
-              ]
             }
           },
+          "response": []
+        },
+        {
+          "name": "Cancel my booking",
           "event": [
             {
               "listen": "test",
@@ -1359,14 +1300,22 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Cancel it again (409)",
+          ],
+          "id": "faae9c6b-733c-4265-94a3-6a0b58612e27",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [],
             "url": {
@@ -1379,19 +1328,12 @@
                 "{{reservationId}}",
                 "cancel"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{customerToken}}",
-                  "type": "string"
-                }
-              ]
             }
           },
+          "response": []
+        },
+        {
+          "name": "Cancel it again (409)",
           "event": [
             {
               "listen": "test",
@@ -1402,20 +1344,72 @@
                 ]
               }
             }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "3. Staff",
-      "description": "Actions use {{reservationId}} (set by Book in the Customer folder). Book a fresh one first: a cancelled booking answers 409. Seat / extend / complete / no-show depend on the time of day, so they have no fixed expected status.",
-      "item": [
-        {
-          "name": "Seat map",
+          ],
+          "id": "ecf5d860-9dac-4bab-b543-4a4ab8ae7151",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{customerToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reservations/{{reservationId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservations",
+                "{{reservationId}}",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "32a5c5c0-3220-49ed-90e3-3bc40b4401d9"
+    },
+    {
+      "name": "3. Staff",
+      "item": [
+        {
+          "name": "Seat map",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "id": "7d22c0ef-a262-4a24-8a90-df9a7d6cdc49",
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{receptionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1427,19 +1421,12 @@
                 "staff",
                 "seat-map"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{receptionToken}}",
-                  "type": "string"
-                }
-              ]
             }
           },
+          "response": []
+        },
+        {
+          "name": "Today's reservations",
           "event": [
             {
               "listen": "test",
@@ -1450,14 +1437,22 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Today's reservations",
+          ],
+          "id": "e241ebc4-0c63-4f1b-9cf1-72cb8910798d",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{receptionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1469,19 +1464,12 @@
                 "staff",
                 "reservations"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{receptionToken}}",
-                  "type": "string"
-                }
-              ]
             }
           },
+          "response": []
+        },
+        {
+          "name": "Tomorrow's reservations",
           "event": [
             {
               "listen": "test",
@@ -1492,14 +1480,22 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Tomorrow's reservations",
+          ],
+          "id": "429f8114-d8b9-4e29-a1c0-4d7071b9ae83",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{receptionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1517,52 +1513,17 @@
                   "value": "{{tomorrow}}"
                 }
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{receptionToken}}",
-                  "type": "string"
-                }
-              ]
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
           "name": "Seat (receptionist)",
+          "id": "bed6abae-9ee0-48f9-9a3b-cd5988595e6a",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/staff/reservations/{{reservationId}}/seat",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "staff",
-                "reservations",
-                "{{reservationId}}",
-                "seat"
-              ]
-            },
-            "description": "Works from 30 min before the start until the end of the sitting. Otherwise 409.",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1572,15 +1533,7 @@
                   "type": "string"
                 }
               ]
-            }
-          }
-        },
-        {
-          "name": "Seat as waiter (403)",
-          "protocolProfileBehavior": {
-            "disableCookies": true
-          },
-          "request": {
+            },
             "method": "POST",
             "header": [],
             "url": {
@@ -1595,18 +1548,12 @@
                 "seat"
               ]
             },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{waiterToken}}",
-                  "type": "string"
-                }
-              ]
-            }
+            "description": "Works from 30 min before the start until the end of the sitting. Otherwise 409."
           },
+          "response": []
+        },
+        {
+          "name": "Seat as waiter (403)",
           "event": [
             {
               "listen": "test",
@@ -1617,14 +1564,56 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Extend by 30 min (seated only)",
+          ],
+          "id": "d04dbe43-8b1a-4999-be5e-d91c3ec1f36d",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{waiterToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/staff/reservations/{{reservationId}}/seat",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "staff",
+                "reservations",
+                "{{reservationId}}",
+                "seat"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Extend by 30 min (seated only)",
+          "id": "bb3d9806-f973-49e3-8767-9dad2c1221f9",
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{waiterToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1632,6 +1621,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"minutes\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/staff/reservations/{{reservationId}}/extend",
               "host": [
@@ -1643,8 +1641,17 @@
                 "{{reservationId}}",
                 "extend"
               ]
-            },
-            "description": "",
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Complete / free table (seated only)",
+          "id": "4c9d8bee-5948-485b-a94a-7c71d000d337",
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          },
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1655,23 +1662,6 @@
                 }
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"minutes\": 30\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "Complete / free table (seated only)",
-          "protocolProfileBehavior": {
-            "disableCookies": true
-          },
-          "request": {
             "method": "POST",
             "header": [],
             "url": {
@@ -1685,8 +1675,17 @@
                 "{{reservationId}}",
                 "complete"
               ]
-            },
-            "description": "",
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark no-show (after start)",
+          "id": "581c06b2-f72e-4dc1-9a86-522b29f6a77d",
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          },
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1696,15 +1695,7 @@
                   "type": "string"
                 }
               ]
-            }
-          }
-        },
-        {
-          "name": "Mark no-show (after start)",
-          "protocolProfileBehavior": {
-            "disableCookies": true
-          },
-          "request": {
+            },
             "method": "POST",
             "header": [],
             "url": {
@@ -1718,46 +1709,17 @@
                 "{{reservationId}}",
                 "no-show"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{waiterToken}}",
-                  "type": "string"
-                }
-              ]
             }
-          }
+          },
+          "response": []
         },
         {
           "name": "Reassign to table 7 (booked only)",
+          "id": "bf907061-57e9-493b-89ca-9af8e44f719c",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/staff/reservations/{{reservationId}}/reassign",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "staff",
-                "reservations",
-                "{{reservationId}}",
-                "reassign"
-              ]
-            },
-            "description": "",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1768,6 +1730,13 @@
                 }
               ]
             },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"table_number\": 7\n}",
@@ -1776,22 +1745,7 @@
                   "language": "json"
                 }
               }
-            }
-          }
-        },
-        {
-          "name": "Reassign as waiter (403)",
-          "protocolProfileBehavior": {
-            "disableCookies": true
-          },
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            },
             "url": {
               "raw": "{{baseUrl}}/staff/reservations/{{reservationId}}/reassign",
               "host": [
@@ -1803,28 +1757,12 @@
                 "{{reservationId}}",
                 "reassign"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{waiterToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"table_number\": 7\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
+          "response": []
+        },
+        {
+          "name": "Reassign as waiter (403)",
           "event": [
             {
               "listen": "test",
@@ -1835,14 +1773,22 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Coastal staff on a Spice booking (404)",
+          ],
+          "id": "550171fc-810d-45bb-a854-bcad6a47d914",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{waiterToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -1850,6 +1796,15 @@
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"table_number\": 7\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
               "raw": "{{baseUrl}}/staff/reservations/{{reservationId}}/reassign",
               "host": [
@@ -1861,28 +1816,12 @@
                 "{{reservationId}}",
                 "reassign"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{coastalToken}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"table_number\": 2\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             }
           },
+          "response": []
+        },
+        {
+          "name": "Coastal staff on a Spice booking (404)",
           "event": [
             {
               "listen": "test",
@@ -1893,14 +1832,81 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "No-show sweep",
+          ],
+          "id": "812baf15-8a7c-4fec-b829-52aeacc15908",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{coastalToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"table_number\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/staff/reservations/{{reservationId}}/reassign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "staff",
+                "reservations",
+                "{{reservationId}}",
+                "reassign"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "No-show sweep",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "id": "8656734c-7148-44ef-810f-4fa1c179f92b",
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{waiterToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [],
             "url": {
@@ -1912,19 +1918,12 @@
                 "staff",
                 "no-show-sweep"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{waiterToken}}",
-                  "type": "string"
-                }
-              ]
             }
           },
+          "response": []
+        },
+        {
+          "name": "Staff logout",
           "event": [
             {
               "listen": "test",
@@ -1935,14 +1934,22 @@
                 ]
               }
             }
-          ]
-        },
-        {
-          "name": "Staff logout",
+          ],
+          "id": "028a8e73-ef68-4cf9-a626-59b92041fd47",
           "protocolProfileBehavior": {
             "disableCookies": true
           },
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{receptionToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [],
             "url": {
@@ -1955,8 +1962,28 @@
                 "staff",
                 "logout"
               ]
-            },
-            "description": "",
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seat map after logout (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status is 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "id": "613fc22a-687c-4800-894b-5208f0d08b0b",
+          "protocolProfileBehavior": {
+            "disableCookies": true
+          },
+          "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -1966,26 +1993,7 @@
                   "type": "string"
                 }
               ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"status is 200\", () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Seat map after logout (401)",
-          "protocolProfileBehavior": {
-            "disableCookies": true
-          },
-          "request": {
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -1997,32 +2005,84 @@
                 "staff",
                 "seat-map"
               ]
-            },
-            "description": "",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{receptionToken}}",
-                  "type": "string"
-                }
-              ]
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"status is 401\", () => pm.response.to.have.status(401));"
-                ]
-              }
-            }
-          ]
+          "response": []
         }
-      ]
+      ],
+      "id": "8b37cffe-cedd-49d9-9787-a2f7bea5116c",
+      "description": "Actions use {{reservationId}} (set by Book in the Customer folder). Book a fresh one first: a cancelled booking answers 409. Seat / extend / complete / no-show depend on the time of day, so they have no fixed expected status."
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// tomorrow's date in IST, e.g. 2026-10-24",
+          "const ist = new Date(Date.now() + 5.5 * 3600 * 1000);",
+          "ist.setUTCDate(ist.getUTCDate() + 1);",
+          "pm.collectionVariables.set('tomorrow', ist.toISOString().slice(0, 10));"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "id": "0b21df8c-d1a0-450f-8baa-b07e6afc58a4",
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "id": "0b572d04-d05c-4094-b050-8ea660ceabd9",
+      "key": "signupEmail",
+      "value": ""
+    },
+    {
+      "id": "a3aeb5b4-da06-43ea-8151-4627971ca8b6",
+      "key": "verifyToken",
+      "value": ""
+    },
+    {
+      "id": "4f52e812-ec25-42db-a062-4fff5b1859db",
+      "key": "tomorrow",
+      "value": ""
+    },
+    {
+      "id": "46c18004-9d3c-4044-8f52-cdb13b67cd44",
+      "key": "reservationId",
+      "value": ""
+    },
+    {
+      "id": "55187747-ebdf-4dcf-857d-bce2f8c1d68b",
+      "key": "customerToken",
+      "value": ""
+    },
+    {
+      "id": "2a2881dd-2c6f-44a2-8a5a-2c1eaac91b59",
+      "key": "priyaToken",
+      "value": ""
+    },
+    {
+      "id": "f91e3c84-ef87-4660-9ff7-67d18e4f1cbc",
+      "key": "meeraToken",
+      "value": ""
+    },
+    {
+      "id": "dad02927-42ec-4860-ad56-0862c9237ec1",
+      "key": "receptionToken",
+      "value": ""
+    },
+    {
+      "id": "b1f2db06-4bbe-42eb-b4d7-edd2d8323f86",
+      "key": "waiterToken",
+      "value": ""
+    },
+    {
+      "id": "2062d8a0-f4cf-44dc-98b3-ad18a68bbf5f",
+      "key": "coastalToken",
+      "value": ""
     }
   ]
 }

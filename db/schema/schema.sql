@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS revoked_token    CASCADE;
+DROP TABLE IF EXISTS floor_feature    CASCADE;
 DROP TABLE IF EXISTS reservation      CASCADE;
 DROP TABLE IF EXISTS restaurant_staff CASCADE;
 DROP TABLE IF EXISTS app_user         CASCADE;
@@ -11,17 +12,40 @@ CREATE EXTENSION IF NOT EXISTS citext;
 CREATE TABLE restaurant (
     restaurant_id bigint      GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name          text        NOT NULL,
+    cuisine       text,
+    tagline       text,
+    photo         text,       -- path of the cover image the front end shows
     address       text,
     phone         text,
     created_at    timestamptz NOT NULL DEFAULT now()
 );
 
+-- pos_x / pos_y: the table's centre on the restaurant's floor plan, which is
+-- a 1000 x 640 drawing area. Drawing only: no booking rule uses them.
 CREATE TABLE dining_table (
     table_id      bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     restaurant_id bigint NOT NULL REFERENCES restaurant ON DELETE CASCADE,
     table_number  int    NOT NULL CHECK (table_number > 0),
     capacity      int    NOT NULL CHECK (capacity IN (2, 4, 6, 8, 10, 20)),
+    pos_x         int    NOT NULL DEFAULT 0 CHECK (pos_x BETWEEN 0 AND 1000),
+    pos_y         int    NOT NULL DEFAULT 0 CHECK (pos_y BETWEEN 0 AND 640),
     UNIQUE (restaurant_id, table_number)
+);
+
+-- The labelled parts of a floor plan (bar, pond, entrance...), drawn around
+-- the tables. x / y is the top-left corner on the same 1000 x 640 area.
+CREATE TABLE floor_feature (
+    feature_id    bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    restaurant_id bigint NOT NULL REFERENCES restaurant ON DELETE CASCADE,
+    kind          text   NOT NULL CHECK (kind IN ('entrance', 'bar', 'kitchen', 'counter', 'pond', 'garden',
+                                                  'terrace', 'deck', 'window', 'fireplace', 'shelf')),
+    label         text   NOT NULL,
+    x             int    NOT NULL CHECK (x BETWEEN 0 AND 1000),
+    y             int    NOT NULL CHECK (y BETWEEN 0 AND 640),
+    width         int    NOT NULL CHECK (width > 0),
+    height        int    NOT NULL CHECK (height > 0),
+
+    CONSTRAINT feature_inside_plan CHECK (x + width <= 1000 AND y + height <= 640)
 );
 
 CREATE TABLE app_user (

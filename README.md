@@ -18,7 +18,7 @@ At small scale this rarely happens. At scale it does: two customers click "Book"
 
 ### Customers
 - Sign up with an email address. Only **verified** emails can make reservations.
-- Book a table at a restaurant for a party of 1 to 20.
+- Book a table at a restaurant for a party of 1 to 20, either picking the exact table on the restaurant's floor plan (only tables of the right size can be picked) or letting the system choose.
 - Cancel their **own** reservations only, and no later than **15 minutes before** arrival.
 
 ### Restaurant staff
@@ -100,12 +100,13 @@ Only **booked** and **seated** reservations hold a table. A table is free whenev
 | Owner-only cancel, 15-minute cutoff | Cancel procedure |
 | Staff role permissions, status changes, extend, reassign | Staff procedures |
 
-## Data Model (planned)
+## Data Model
 
 | Entity | Purpose |
 |---|---|
 | `restaurant` | A tenant |
-| `dining_table` | A numbered table or hall in a restaurant, with its capacity |
+| `dining_table` | A numbered table or hall in a restaurant, with its capacity and its position on the floor plan |
+| `floor_feature` | A labelled part of a restaurant's floor plan (bar, pond, entrance...), for drawing only |
 | `app_user` | A customer account, with email verification |
 | `restaurant_staff` | A staff login tied to one restaurant, with a role (receptionist or waiter) |
 | `reservation` | A booking of one table for one time period by one customer, with a status |
@@ -118,8 +119,17 @@ Only **booked** and **seated** reservations hold a table. A table is free whenev
 |---|---|
 | Database | PostgreSQL (plain SQL + PL/pgSQL, no ORM) |
 | Backend | Go, Echo, pgx |
-| Front-end | TBD |
-| Hosting | TBD |
+| Front-end | React + TypeScript (Vite), TanStack Query, React Router |
+| Hosting | Local (Go API on :8080, Vite on :5173 proxying the API) |
+
+### Running it
+
+```powershell
+psql -f db/reset.sql                 # build the database (load .env first)
+cd backend;  go run ./cmd/server     # API on http://localhost:8080
+cd frontend; npm install; npx vite   # site on http://localhost:5173
+.\run_tests.ps1                      # every database + Go test
+```
 
 ---
 
