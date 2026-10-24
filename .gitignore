@@ -7,3 +7,16 @@
 
 # Generated knowledge graph
 graphify-out/
+
+# Report, screenshots, ER diagram and other project docs
+docs/
+
+# Postman collections and workspace files
+postman/
+.postman/
+
+# Tests (kept locally, not published)
+db/tests/
+run_tests.ps1
+*_test.go
+backend/cmd/mailtest/
